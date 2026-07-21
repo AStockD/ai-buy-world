@@ -4,6 +4,7 @@ import { addressRoutes } from './address.routes.js';
 import { productRoutes } from './product.routes.js';
 import { wishlistRoutes } from './wishlist.routes.js';
 import { orderRoutes } from './order.routes.js';
+import { chatRoutes } from './chat.routes.js';
 
 export async function registerRoutes(app: FastifyInstance) {
   // 认证路由（公开）
@@ -21,7 +22,9 @@ export async function registerRoutes(app: FastifyInstance) {
   // 订单（需认证）
   await app.register(orderRoutes, { prefix: '/api/orders' });
 
+  // AI 对话（需认证）
+  await app.register(chatRoutes, { prefix: '/api/chat' });
+
   // 后续迭代逐步注册
-  // app.register(chatRoutes, { prefix: '/api/chat' });
   // app.register(webhookRoutes, { prefix: '/api/webhooks' });
 }
