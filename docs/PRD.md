@@ -517,24 +517,26 @@ AI 需识别以下用户意图并触发对应流程：
 
 #### 3.13.1 系统定位
 
-**核心原则**：Flylink 是电商后端，HiGoBuy 是对话式前端。MVP 阶段不重复建设订单管理系统，而是深度集成 Flylink 的电商能力。
+**核心原则**：HiGoBuy 是业务主控平台，Flylink 提供订单存储和支付通道。物流履约、集运调度、订单状态管理均由 HiGoBuy 掌控，Flylink 仅作为订单数据的存储方和支付处理方。
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  HiGoBuy（对话式前端）                                │
-│  - 用户交互（对话、推荐、心愿单）                      │
-│  - 商品浏览/搜索                                      │
-│  - 用户画像/偏好                                      │
-│  - 订单展示（轻量引用）                               │
-└───────────────────┬─────────────────────────────────┘
-                    │ API
-┌───────────────────▼─────────────────────────────────┐
-│  Flylink（电商后端）                                  │
-│  - 商品转化（原始链接 → 平台商品）                     │
-│  - 订单管理（创建、支付、状态流转）                    │
-│  - 买手调度、集运、履约                               │
-│  - 支付处理                                           │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  HiGoBuy（业务主控平台）                                  │
+│  - 用户交互（对话、推荐、心愿单）                          │
+│  - 商品转化与展示                                         │
+│  - 订单状态管理（主控方，驱动状态流转）                     │
+│  - 物流履约（买手调度、集货、发运、配送）                   │
+│  - 集运批次管理（聚类、提货地址分配）                       │
+│  - 用户画像/偏好                                          │
+└──────────┬───────────────────────────────┬──────────────┘
+           │ 创建/更新订单                  │ 调用支付
+           ▼                               ▼
+┌─────────────────────────────────────────────────────────┐
+│  Flylink（订单存储 + 支付通道）                           │
+│  - 订单数据存储（接收 HiGoBuy 的订单创建和状态更新）       │
+│  - 支付处理（接收用户支付，回调通知 HiGoBuy）              │
+│  - 商品转化服务（原始链接 → 商品信息）                     │
+└─────────────────────────────────────────────────────────┘
 ```
 
 #### 3.13.2 三种链接关系
@@ -560,39 +562,40 @@ HiGoBuy 存储为 Product（缓存/投影）
 
 #### 3.13.3 下单支付流程
 
-**方案：先本平台下单，再 Flylink 支付**
-
 ```
 用户点击"立即购买"
     ↓
-HiGoBuy 创建轻量 Order（状态：待支付）
+HiGoBuy 创建 Order（状态：待支付）
     ↓
 调用 Flylink 创建订单 API → 获取 flylinkOrderId + flylinkPaymentUrl
     ↓
-用户跳转 Flylink 支付页面完成支付
+展示支付卡片 → 用户跳转 Flylink 支付页面
     ↓
-Flylink 支付成功 → Webhook 回调 HiGoBuy
+用户完成支付 → Flylink Webhook 通知 HiGoBuy
     ↓
-HiGoBuy 更新 Order 状态为"已支付"
+HiGoBuy 更新 Order 状态为"已支付" → 回调 Flylink 同步状态
     ↓
-后续履约（买手采购、集运、配送）由 Flylink 完成
+HiGoBuy 管理履约：买手采购 → 国内集货 → 国际发运 → 末端配送
     ↓
-HiGoBuy 通过 API 查询订单状态，在对话中展示给用户
+每个状态节点：HiGoBuy 更新本地 Order → 回调 Flylink 同步
+    ↓
+包裹送达提货地址 → 用户凭取件码自提 → HiGoBuy 更新为"已提货"
 ```
 
-**优势**：
-- 用户体验：下单后立即能在本平台看到订单（即使未支付）
-- 本平台掌握订单生命周期，支持待支付、超时取消等
-- 符合主流电商模式，开发量小
+**关键点**：
+- 订单状态由 **HiGoBuy 管理并驱动**，Flylink 仅存储
+- 每个状态变更，HiGoBuy 主动回调 Flylink 更新
+- Flylink Webhook 仅在**支付完成**时通知 HiGoBuy
 
 #### 3.13.4 数据同步策略
 
-| 数据 | 来源 | 同步方式 | 说明 |
-|------|------|----------|------|
-| 商品信息 | Flylink | API 拉取 + 本地缓存 | 用于快速展示，定期刷新 |
-| 订单创建 | HiGoBuy → Flylink | API 调用 | 用户下单时创建 Flylink 订单 |
-| 支付状态 | Flylink → HiGoBuy | Webhook 回调 | 支付完成后更新本地 Order 状态 |
-| 物流状态 | Flylink → HiGoBuy | 定时轮询 / Webhook | 用于订单追踪展示 |
+| 数据 | 方向 | 方式 | 说明 |
+|------|------|------|------|
+| 商品信息 | Flylink → HiGoBuy | API 拉取 + 本地缓存 | 商品转化时获取，定期刷新 |
+| 订单创建 | HiGoBuy → Flylink | API 调用 | 用户下单时同步到 Flylink |
+| 支付确认 | Flylink → HiGoBuy | Webhook 回调 | 支付完成后通知 HiGoBuy |
+| 订单状态 | HiGoBuy → Flylink | API 回调 | HiGoBuy 驱动状态更新，同步到 Flylink |
+| 物流信息 | HiGoBuy 管理 | 本地存储 | 集运批次、提货地址、取件码等 |
 
 #### 3.13.5 MVP 职责划分
 
@@ -602,12 +605,15 @@ HiGoBuy 通过 API 查询订单状态，在对话中展示给用户
 | 对话交互 | ✅ | - |
 | 商品推荐 | ✅ | - |
 | 心愿单 | ✅ | - |
-| 商品转化 | 调用 API | ✅ 实现 |
-| 订单创建 | 调用 API | ✅ 实现 |
-| 支付处理 | 跳转 | ✅ 实现 |
-| 买手调度 | - | ✅ 实现 |
-| 集运履约 | - | ✅ 实现 |
-| 订单展示 | ✅ 查询展示 | 数据源 |
+| 商品转化 | 调用 API | ✅ 提供服务 |
+| 订单存储 | 调用 API 写入 | ✅ 提供存储 |
+| 支付处理 | 跳转 | ✅ 提供服务 |
+| 订单状态管理 | ✅ **主控方** | 被动接收更新 |
+| 买手调度 | ✅ | - |
+| 集运批次管理 | ✅ | - |
+| 提货地址分配 | ✅ | - |
+| 物流履约 | ✅ | - |
+| 取件码生成 | ✅ | - |
 
 ---
 
@@ -663,30 +669,31 @@ HiGoBuy 存储为 Product（缓存），展示商品卡片（含本地化价格 
     ↓
 选择是否"愿意代他人收货"（仅更新意愿，不影响本次订单）
     ↓
-HiGoBuy 创建轻量 Order（状态：待支付）
+HiGoBuy 创建 Order（状态：待支付）
     ↓
 调用 Flylink 创建订单 API → 获取 flylinkOrderId + flylinkPaymentUrl
     ↓
-展示支付卡片（费用明细 + 批次信息 + "前往支付"按钮）
+展示支付卡片（费用明细 + "前往支付"按钮）
     ↓
 用户点击"前往支付" → 跳转 Flylink 支付页面
     ↓
 用户在 Flylink 完成支付
     ↓
-Flylink Webhook 回调 → HiGoBuy 更新 Order 状态为"已支付"
+Flylink Webhook 通知 HiGoBuy → HiGoBuy 更新 Order 状态为"已支付" → 回调 Flylink 同步
     ↓
-Flylink 履约：买手采购 → 国内集货 → 国际发运 → 到达目的国
+HiGoBuy 分配集运批次 + 调度买手 → 更新为"集货中" → 回调 Flylink 同步
     ↓
-HiGoBuy 同步订单状态 → 在对话中推送物流更新
+买手采购 → 国内集货 → 国际发运 → 更新为"运输中" → 回调 Flylink 同步
     ↓
-整批包裹送达提货地址 → 用户凭取件码自提
+送达提货地址 → 更新为"待提货" → 推送取件码 → 回调 Flylink 同步
+    ↓
+用户凭取件码自提 → 更新为"已提货" → 回调 Flylink 同步
 ```
 
-**关键集成点**：
-- 商品转化：调用 Flylink API 获取商品信息和 flylinkUrl
-- 订单创建：调用 Flylink API 创建订单，获取 flylinkOrderId
-- 支付处理：跳转 Flylink 支付页面，不重复建设支付系统
-- 状态同步：通过 Flylink Webhook 接收支付和物流状态更新
+**关键设计**：
+- HiGoBuy 是订单状态的**主控方**，驱动整个生命周期
+- Flylink 仅在支付环节主动通知（Webhook），其余状态由 HiGoBuy 回调更新
+- 物流履约（买手调度、集运批次、提货地址、取件码）全部由 HiGoBuy 管理
 
 ### 5.2 心愿单购买流程
 
@@ -723,7 +730,7 @@ HiGoBuy 同步订单状态 → 在对话中推送物流更新
 
 ## 6. 数据模型（核心实体）
 
-> **设计原则**：MVP 阶段采用"Flylink 为电商后端，HiGoBuy 为对话式前端"的架构。核心实体（Product、Order）是 Flylink 数据的本地缓存/投影，用于快速展示和用户交互。订单的支付、履约、状态流转由 Flylink 管理，HiGoBuy 通过 API/Webhook 同步状态。商品定价（ProductPricing）由 HiGoBuy 管理，实现多区域多币种展示。
+> **设计原则**：HiGoBuy 是业务主控平台，管理商品展示、订单状态、物流履约、集运调度等核心业务。Flylink 提供商品转化服务、订单数据存储和支付通道。Product 是 Flylink 商品数据的本地缓存；Order 由 HiGoBuy 管理并驱动状态流转，同步存储到 Flylink。ProductPricing 由 HiGoBuy 管理，实现多区域多币种展示。
 
 ### 6.1 商品 (Product)
 
@@ -893,33 +900,37 @@ R_now  = 7.05（当前市场汇率）
 
 ### 6.3 订单 (Order)
 
-订单是 Flylink 订单的轻量引用/投影，用于 HiGoBuy 的订单展示和用户交互。核心订单逻辑（支付、履约、状态流转）由 Flylink 管理，HiGoBuy 通过 API 同步状态。
+订单是 HiGoBuy 的核心业务实体，由 HiGoBuy 管理并驱动状态流转。订单数据同步存储到 Flylink（用于订单存储），但 HiGoBuy 是数据的**主控方**。支付完成后，HiGoBuy 主动回调 Flylink 更新状态。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | orderNo | string | 订单号（HG + 日期 + 序号，HiGoBuy 内部标识） |
 | userId | string | 用户 ID |
-| flylinkOrderId | string | **Flylink 订单 ID（唯一关联，支付后回写）** |
+| flylinkOrderId | string | **Flylink 订单 ID（创建时获取，用于回调更新）** |
 | flylinkPaymentUrl | string | **Flylink 支付链接（创建订单时获取）** |
 | productId | string | 商品 ID（关联 Product） |
 | selectedSkuId | string | 用户选择的规格 SKU ID（null = 无规格商品） |
-| status | enum | **待支付/已支付/集货中/运输中/待提货/已提货**（从 Flylink 同步） |
+| status | enum | **待支付/已支付/集货中/运输中/待提货/已提货**（HiGoBuy 管理，同步到 Flylink） |
 | productPrice | decimal | 商品货款（本地币种，快照） |
 | shippingFee | decimal | 集运费（本地币种，快照） |
 | totalAmount | decimal | 合计金额（本地币种，快照） |
 | currency | string | 订单币种（如 USD） |
 | homeAddress | Address | 用户选择的收货地址（结构化快照），见 6.15 |
-| deliveryBatchId | string | 所属集运批次 ID（从 Flylink 同步） |
+| deliveryBatchId | string | 所属集运批次 ID（HiGoBuy 管理） |
 | willingToReceiveForOthers | boolean | 下单时用户是否选择"愿意代他人收货" |
-| pickupCode | string | 取件码（批次到达后从 Flylink 同步） |
+| pickupCode | string | 取件码（HiGoBuy 生成，批次到达后通知用户） |
 | createdAt | datetime | 创建时间 |
 | updatedAt | datetime | 最后更新时间 |
 
-**字段说明**：
-- `flylinkOrderId`：用户完成支付后，通过 Flylink Webhook 回写
-- `status`：通过 Flylink Webhook 或定时轮询同步
-- `deliveryBatchId`、`pickupCode`：订单进入集运阶段后从 Flylink 同步
-- 定价快照（`productPrice`、`shippingFee`、`totalAmount`）在创建订单时从 ProductPricing 计算并保存
+**状态流转**（HiGoBuy 驱动）：
+```
+待支付 → (Flylink Webhook 支付确认) → 已支付
+    → (HiGoBuy 分配批次/买手接单) → 集货中
+    → (国内集货完成/国际发运) → 运输中
+    → (到达目的国/送达提货地址) → 待提货
+    → (用户取件) → 已提货
+```
+每个状态变更，HiGoBuy 更新本地 Order 后回调 Flylink 同步。
 
 ### 6.4 集运批次 (DeliveryBatch)
 
