@@ -1,0 +1,19 @@
+# 基础镜像：预装所有 node_modules 依赖
+# 构建命令: docker build -f Dockerfile.base -t abw-base .
+# 仅当 package.json / package-lock.json 变更时才需要重新构建
+
+FROM node:20-slim
+
+WORKDIR /app
+
+# 复制所有 package.json（monorepo 结构）
+COPY package.json package-lock.json ./
+COPY apps/server/package.json apps/server/
+COPY apps/web/package.json apps/web/
+COPY packages/shared/package.json packages/shared/
+
+# 安装所有依赖
+RUN npm ci --ignore-scripts
+
+# 安装 OpenSSL（Prisma 运行时需要）
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*

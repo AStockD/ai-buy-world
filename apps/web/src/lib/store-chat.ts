@@ -73,31 +73,55 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
 
     const userMsg: Message = { role: 'user', content };
+    const assistantMsg: Message = { role: 'assistant', content: '', cards: [] };
+
     set((s) => ({
-      messages: [...s.messages, userMsg],
+      messages: [...s.messages, userMsg, assistantMsg],
       isStreaming: true,
     }));
 
     try {
-      const res = await api.sendMessage(conversationId, content);
-      const assistantMsg: Message = {
-        role: 'assistant',
-        content: res.data.text,
-        cards: res.data.cards,
-      };
-      set((s) => ({
-        messages: [...s.messages, assistantMsg],
-        isStreaming: false,
-      }));
+      await api.streamMessage(conversationId, content, (event, data) => {
+        if (event === 'text_delta') {
+          set((s) => {
+            const messages = [...s.messages];
+            const lastMsg = messages[messages.length - 1];
+            if (lastMsg && lastMsg.role === 'assistant') {
+              lastMsg.content += data.text || '';
+            }
+            return { messages };
+          });
+        } else if (event === 'card') {
+          set((s) => {
+            const messages = [...s.messages];
+            const lastMsg = messages[messages.length - 1];
+            if (lastMsg && lastMsg.role === 'assistant') {
+              lastMsg.cards = [...(lastMsg.cards || []), data];
+            }
+            return { messages };
+          });
+        } else if (event === 'done') {
+          set({ isStreaming: false });
+        } else if (event === 'error') {
+          set((s) => {
+            const messages = [...s.messages];
+            const lastMsg = messages[messages.length - 1];
+            if (lastMsg && lastMsg.role === 'assistant') {
+              lastMsg.content += `\n\n错误: ${data.message || '未知错误'}`;
+            }
+            return { messages, isStreaming: false };
+          });
+        }
+      });
     } catch (err: any) {
-      const errorMsg: Message = {
-        role: 'assistant',
-        content: `出错了: ${err.message}`,
-      };
-      set((s) => ({
-        messages: [...s.messages, errorMsg],
-        isStreaming: false,
-      }));
+      set((s) => {
+        const messages = [...s.messages];
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg && lastMsg.role === 'assistant') {
+          lastMsg.content = `出错了: ${err.message}`;
+        }
+        return { messages, isStreaming: false };
+      });
     }
   },
 

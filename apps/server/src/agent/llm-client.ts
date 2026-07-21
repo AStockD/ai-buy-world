@@ -44,6 +44,15 @@ export class LLMClient {
     tools?: any[],
     onDelta?: (text: string) => void,
   ): Promise<LLMResponse> {
+    return this.chatWithModel(config.llm.model, messages, tools, onDelta);
+  }
+
+  async chatWithModel(
+    model: string,
+    messages: LLMMessage[],
+    tools?: any[],
+    onDelta?: (text: string) => void,
+  ): Promise<LLMResponse> {
     if (!this.apiKey || this.apiKey === 'dev-llm-key') {
       return this.mockChat(messages, tools);
     }
@@ -55,7 +64,7 @@ export class LLMClient {
         'Authorization': `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: config.llm.model,
+        model,
         messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
         tools: tools?.length ? tools : undefined,
         stream: !!onDelta,

@@ -3,6 +3,7 @@ dist/
 .next/
 .env
 .env.local
+.env.docker
 *.log
 .DS_Store
 coverage/

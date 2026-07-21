@@ -1,5 +1,6 @@
 'use client';
 
+import './globals.css';
 import { useEffect } from 'react';
 import { useAuthStore } from '../lib/store-auth';
 import { api } from '../lib/api';
@@ -17,9 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   if (isLoading) {
     return (
       <html lang="zh-CN">
-        <body className="bg-gray-50">
-          <div className="flex min-h-screen items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
+        <body>
+          <div className="flex min-h-screen items-center justify-center bg-surface-bg">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
           </div>
         </body>
       </html>
@@ -28,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="zh-CN">
-      <body className="bg-gray-50 text-gray-900 antialiased">
+      <body className="antialiased">
         {children}
       </body>
     </html>

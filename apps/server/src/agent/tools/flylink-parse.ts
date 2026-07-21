@@ -52,6 +52,14 @@ toolRegistry.register({
       },
     });
 
-    return { productId: product.id, isNew: result.isNew };
+    return {
+      productId: product.id,
+      isNew: result.isNew,
+      name: product.name,
+      platform: product.source_platform,
+      price: `${product.source_currency} ${product.source_price}`,
+      image: product.image_url,
+      skuCount: product.sku_variants?.skus?.length || 0,
+    };
   },
 });

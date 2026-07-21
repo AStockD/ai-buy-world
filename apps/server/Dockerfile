@@ -1,21 +1,9 @@
-FROM node:20-slim AS base
+# 构建基础镜像: docker build -f Dockerfile.base -t abw-base .
+# 应用构建: docker build -f apps/server/Dockerfile -t abw-server .
 
-# --- deps stage (cached, no OpenSSL needed) ---
-FROM base AS deps
+# --- 构建阶段 ---
+FROM abw-base AS builder
 WORKDIR /app
-
-COPY package.json package-lock.json ./
-COPY apps/server/package.json apps/server/
-COPY apps/web/package.json apps/web/
-COPY packages/shared/package.json packages/shared/
-
-RUN npm ci --ignore-scripts
-
-# --- build stage (cached, no OpenSSL needed) ---
-FROM base AS builder
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
 
 COPY . .
 
@@ -23,11 +11,9 @@ RUN npx prisma generate --schema=apps/server/prisma/schema.prisma
 RUN npm run build --workspace=packages/shared
 RUN npm run build --workspace=apps/server
 
-# --- runtime stage (OpenSSL only here) ---
-FROM base AS runner
+# --- 运行阶段 ---
+FROM abw-base AS runner
 WORKDIR /app
-
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 
