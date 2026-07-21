@@ -675,6 +675,76 @@
       font-size: 13px;
     }
 
+    /* ===== SKU SELECTOR ===== */
+    .sku-selector {
+      background: var(--surface-2);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .sku-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .sku-dim {
+      margin-bottom: 8px;
+    }
+
+    .sku-dim:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .sku-dim-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .sku-opts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .sku-opt {
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .sku-opt:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    .sku-opt.selected {
+      background: var(--brand);
+      color: white;
+      border-color: var(--brand);
+    }
+
+    .sku-opt.out-of-stock {
+      opacity: 0.35;
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
+
+    .sku-note {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
     .product-actions {
       display: flex;
       gap: 8px;
@@ -1541,6 +1611,88 @@
 
     .address-rec-item.selected .address-check { opacity: 1; }
 
+    /* ===== WILLING TO RECEIVE FOR OTHERS ===== */
+    .willing-card {
+      background: var(--surface-1);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      margin-bottom: 8px;
+    }
+    .willing-header {
+      padding: 12px 16px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .willing-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      border-top: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .willing-option:hover { background: var(--surface-2); }
+    .willing-option.selected { background: #f0f7ff; }
+    .willing-radio {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .willing-option.selected .willing-radio {
+      border-color: var(--brand);
+      background: var(--brand);
+    }
+    .willing-option.selected .willing-radio::after {
+      content: '✓';
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .willing-content { flex: 1; min-width: 0; }
+    .willing-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .willing-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .willing-reward {
+      display: inline-block;
+      background: #fff7ed;
+      color: #c2410c;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+    .willing-footer {
+      padding: 8px 16px;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
     /* ===== TYPEWRITER CURSOR ===== */
     .type-cursor {
       display: inline-block;
@@ -1590,7 +1742,7 @@
     </div>
     <div class="sidebar-item" onclick="loadChat('chat3')">
       <span class="sidebar-item-icon">💬</span>
-      <span class="sidebar-item-label">新加坡集运费用查询</span>
+      <span class="sidebar-item-label">美国集运费用查询</span>
       <span class="sidebar-item-time">7月10日</span>
     </div>
   </div>
@@ -1633,7 +1785,7 @@
     <div class="user-avatar">林</div>
     <div class="user-info">
       <div class="user-name">林晓雯</div>
-      <div class="user-location">📍 新加坡 · Buona Vista</div>
+      <div class="user-location">📍 美国 · Rowland Heights, CA</div>
     </div>
     <span style="color: var(--sidebar-muted); font-size: 16px;">⚙️</span>
   </div>
@@ -1687,7 +1839,7 @@
             <div class="welcome-card-icon">🌟</div>
             <div class="welcome-card-content">
               <div class="welcome-card-title">社区好物推荐</div>
-              <div class="welcome-card-desc">新加坡华人社区本周热购榜单</div>
+              <div class="welcome-card-desc">美国华人社区本周热购榜单</div>
             </div>
           </div>
         </div>
@@ -1736,9 +1888,9 @@
 let conversationState = 'idle';
 let pendingProduct = null;
 let wishlist = [
-  { id: 'w1', name: '李宁运动鞋 飞电3系列', price: 'S$ 72', emoji: '👟', original: '¥ 369' },
-  { id: 'w2', name: '小米Redmi Note 14 Pro 手机', price: 'S$ 248', emoji: '📱', original: '¥ 1,249' },
-  { id: 'w3', name: 'Lululemon Align 瑜伽裤 高腰版', price: 'S$ 88', emoji: '🩳', original: '¥ 448' }
+  { id: 'w1', name: '李宁运动鞋 飞电3系列', price: '$ 52.70', emoji: '👟', original: '¥ 369' },
+  { id: 'w2', name: '小米Redmi Note 14 Pro 手机', price: '$ 178.43', emoji: '📱', original: '¥ 1,249' },
+  { id: 'w3', name: 'Lululemon Align 瑜伽裤 高腰版', price: '$ 64.14', emoji: '🩳', original: '¥ 448' }
 ];
 
 const PRODUCTS = {
@@ -1747,22 +1899,37 @@ const PRODUCTS = {
     emoji: '👟',
     source: '淘宝',
     originalPrice: '¥ 499',
-    price: 89.50,
-    shipping: 12.80,
-    currency: 'S$',
+    price: 71.30,
+    shipping: 4.00,
+    currency: '$',
     rating: '4.9',
     sales: '12,847',
     weight: '0.8kg',
-    stock: '有货'
+    stock: '有货',
+    skuDimensions: [
+      { key: 'color', label: '颜色', options: ['白色', '黑色', '白蓝', '米棕'] },
+      { key: 'size', label: '尺码', options: ['US 6', 'US 7', 'US 8', 'US 9', 'US 10', 'US 11'] }
+    ],
+    skus: [
+      { id: 's1', specs: {color:'白色',size:'US 8'}, priceDelta:0, weightKg:0.8, stock:'有货' },
+      { id: 's2', specs: {color:'白色',size:'US 9'}, priceDelta:0, weightKg:0.85, stock:'有货' },
+      { id: 's3', specs: {color:'白色',size:'US 10'}, priceDelta:0, weightKg:0.9, stock:'有货' },
+      { id: 's4', specs: {color:'黑色',size:'US 8'}, priceDelta:0, weightKg:0.8, stock:'有货' },
+      { id: 's5', specs: {color:'黑色',size:'US 9'}, priceDelta:0, weightKg:0.85, stock:'有货' },
+      { id: 's6', specs: {color:'白蓝',size:'US 8'}, priceDelta:5, weightKg:0.8, stock:'有货' },
+      { id: 's7', specs: {color:'白蓝',size:'US 9'}, priceDelta:5, weightKg:0.85, stock:'无货' },
+      { id: 's8', specs: {color:'米棕',size:'US 8'}, priceDelta:8, weightKg:0.82, stock:'有货' },
+    ],
+    selectedSku: null
   },
   jd_dyson: {
     name: 'Dyson V12 Detect Slim 无绳吸尘器 紫色',
     emoji: '🔌',
     source: '京东自营',
     originalPrice: '¥ 3,799',
-    price: 749.00,
-    shipping: 45.00,
-    currency: 'S$',
+    price: 542.71,
+    shipping: 15.00,
+    currency: '$',
     rating: '4.8',
     sales: '3,201',
     weight: '2.2kg',
@@ -1773,9 +1940,9 @@ const PRODUCTS = {
     emoji: '👜',
     source: '天猫旗舰店',
     originalPrice: '¥ 780',
-    price: 138.00,
-    shipping: 14.50,
-    currency: 'S$',
+    price: 111.43,
+    shipping: 3.00,
+    currency: '$',
     rating: '4.7',
     sales: '5,632',
     weight: '0.5kg',
@@ -1927,6 +2094,42 @@ function renderFlylinkCard(product) {
 }
 
 function renderProductCard(product) {
+  let skuSection = '';
+  if (product.skuDimensions) {
+    const selectedSpecs = product._selectedSpecs || {};
+    const dims = product.skuDimensions.map(dim => {
+      const opts = dim.options.map(opt => {
+        const isSelected = selectedSpecs[dim.key] === opt;
+        const testSpecs = { ...selectedSpecs, [dim.key]: opt };
+        const allDims = product.skuDimensions.map(d => d.key);
+        const allSelected = allDims.every(k => testSpecs[k]);
+        let isOutOfStock = false;
+        if (allSelected) {
+          const match = product.skus.find(sku => allDims.every(k => sku.specs[k] === testSpecs[k]));
+          isOutOfStock = match ? match.stock === '无货' : false;
+        }
+        let cls = 'sku-opt';
+        if (isSelected) cls += ' selected';
+        if (isOutOfStock) cls += ' out-of-stock';
+        const click = isOutOfStock ? '' : `onclick="selectSku('${dim.key}','${opt}')"`;
+        return `<button class="${cls}" ${click}>${opt}${isOutOfStock ? ' (无货)' : ''}</button>`;
+      }).join('');
+      return `<div class="sku-dim"><div class="sku-dim-label">${dim.label}</div><div class="sku-opts">${opts}</div></div>`;
+    }).join('');
+
+    const skuNote = product.selectedSku
+      ? `已选：${Object.values(product.selectedSku.specs).join(' / ')}`
+      : '请选择完整规格';
+    skuSection = `
+      <div class="sku-selector">
+        <div class="sku-title">📐 选择规格</div>
+        ${dims}
+        <div class="sku-note">${skuNote}</div>
+      </div>`;
+  }
+
+  const canBuy = !product.skuDimensions || product.selectedSku;
+
   return `
     <div class="product-card">
       <div class="product-img-wrap">
@@ -1936,6 +2139,7 @@ function renderProductCard(product) {
       </div>
       <div class="product-body">
         <div class="product-name">${product.name}</div>
+        ${skuSection}
         <div class="product-price-row">
           <span class="product-price-currency">${product.currency}</span>
           <span class="product-price-main">${product.price.toFixed(2)}</span>
@@ -1962,12 +2166,46 @@ function renderProductCard(product) {
           </div>
         </div>
         <div class="product-actions">
-          <button class="btn btn-primary" onclick="startPurchase()">🛒 立即购买</button>
+          <button class="btn btn-primary" onclick="startPurchase()" ${canBuy ? '' : 'disabled style="opacity:0.5;cursor:not-allowed"'}>🛒 立即购买</button>
           <button class="btn btn-outline" onclick="addToWishlist()" title="加入心愿单">❤️</button>
           <button class="btn btn-outline" onclick="shareProduct()" title="分享给朋友">📤</button>
         </div>
       </div>
     </div>`;
+}
+
+function selectSku(dimKey, optionValue) {
+  if (!pendingProduct || !pendingProduct.skuDimensions) return;
+
+  if (!pendingProduct._selectedSpecs) pendingProduct._selectedSpecs = {};
+  pendingProduct._selectedSpecs[dimKey] = optionValue;
+
+  const allDims = pendingProduct.skuDimensions.map(d => d.key);
+  const allSelected = allDims.every(k => pendingProduct._selectedSpecs[k]);
+
+  if (allSelected) {
+    const match = pendingProduct.skus.find(sku =>
+      allDims.every(k => sku.specs[k] === pendingProduct._selectedSpecs[k])
+    );
+    if (match) {
+      pendingProduct.selectedSku = match;
+      const exchangeRate = 7.35;
+      const markupRate = 0.05;
+      const baseSourcePrice = 499;
+      const newSourcePrice = baseSourcePrice + match.priceDelta;
+      pendingProduct.price = Math.round((newSourcePrice / exchangeRate) * (1 + markupRate) * 100) / 100;
+      pendingProduct.weight = match.weightKg + 'kg';
+      const shippingRatePerKg = 5;
+      pendingProduct.shipping = Math.round(match.weightKg * shippingRatePerKg * 100) / 100;
+    }
+  } else {
+    pendingProduct.selectedSku = null;
+  }
+
+  const wrap = document.querySelector('.msg-card-wrap');
+  if (wrap) {
+    wrap.innerHTML = renderProductCard(pendingProduct);
+  }
 }
 
 function renderOrderCard() {
@@ -1988,17 +2226,17 @@ function renderOrderCard() {
             </div>
             <div class="timeline-step">
               <div class="timeline-dot current"></div>
-              <div class="timeline-label current">◉ 国内集货中（新加坡区域集运仓）</div>
+              <div class="timeline-label current">◉ 国内集货中（深圳集运仓）</div>
               <div class="timeline-time">预计 2026-07-14 集齐</div>
             </div>
             <div class="timeline-step">
               <div class="timeline-dot"></div>
-              <div class="timeline-label">◯ 集运发货（每周一统一发出）</div>
+              <div class="timeline-label">◯ 国际发运（中国 → 美国）</div>
               <div class="timeline-time">预计 2026-07-15</div>
             </div>
             <div class="timeline-step">
               <div class="timeline-dot"></div>
-              <div class="timeline-label">◯ 海外末端配送</div>
+              <div class="timeline-label">◯ 末端配送（送达提货地址）</div>
               <div class="timeline-time">预计 2026-07-22 ～ 07-25</div>
             </div>
           </div>
@@ -2006,10 +2244,10 @@ function renderOrderCard() {
             <div class="wishlist-item-img">👟</div>
             <div>
               <div style="font-size:12px;font-weight:600;color:var(--text)">Nike Air Force 1 白色 × 1</div>
-              <div style="font-size:11px;color:var(--text-muted)">货款 S$89.50 + 集运 S$12.80</div>
+              <div style="font-size:11px;color:var(--text-muted)">货款 $71.30 + 集运 $4.00</div>
             </div>
             <div style="margin-left:auto;text-align:right">
-              <div style="font-size:13px;font-weight:700;color:var(--accent)">S$ 102.30</div>
+              <div style="font-size:13px;font-weight:700;color:var(--accent)">$ 75.30</div>
               <div style="font-size:10px;color:var(--success)">✓ 已支付</div>
             </div>
           </div>
@@ -2032,12 +2270,12 @@ function renderOrderCard() {
             <div class="timeline-step">
               <div class="timeline-dot done"></div>
               <div class="timeline-label done">✓ 集运已发货</div>
-              <div class="timeline-time">2026-07-07 集运批次 SG-2407</div>
+              <div class="timeline-time">2026-07-07 集运批次 US-260707</div>
             </div>
             <div class="timeline-step">
               <div class="timeline-dot current"></div>
-              <div class="timeline-label current">◉ 已到新加坡仓库，等待末端派送</div>
-              <div class="timeline-time">2026-07-12 06:48 抵达 SG-SORT</div>
+              <div class="timeline-label current">◉ 已到达美国，等待末端配送</div>
+              <div class="timeline-time">2026-07-12 06:48 抵达 US-LAX</div>
             </div>
             <div class="timeline-step">
               <div class="timeline-dot"></div>
@@ -2049,10 +2287,10 @@ function renderOrderCard() {
             <div class="wishlist-item-img">🔌</div>
             <div>
               <div style="font-size:12px;font-weight:600;color:var(--text)">Dyson V12 Detect Slim × 1</div>
-              <div style="font-size:11px;color:var(--text-muted)">货款 S$749.00 + 集运 S$45.00</div>
+              <div style="font-size:11px;color:var(--text-muted)">货款 $542.71 + 集运 $15.00</div>
             </div>
             <div style="margin-left:auto;text-align:right">
-              <div style="font-size:13px;font-weight:700;color:var(--accent)">S$ 794.00</div>
+              <div style="font-size:13px;font-weight:700;color:var(--accent)">$ 557.71</div>
               <div style="font-size:10px;color:var(--success)">✓ 已支付</div>
             </div>
           </div>
@@ -2090,10 +2328,10 @@ function renderWishlistCard() {
 
 function renderRecommendCard() {
   const items = [
-    { emoji: '👟', name: '安踏 C37+ 跑步鞋 轻量版', price: 'S$ 65', original: '¥ 329', hot: '483人购买' },
-    { emoji: '🎧', name: 'Sony WH-1000XM5 降噪耳机', price: 'S$ 315', original: '¥ 1,599', hot: '本周新加坡热购' },
-    { emoji: '💄', name: '花西子 新彝族印象口红 定制版', price: 'S$ 28', original: '¥ 139', hot: '社区推荐' },
-    { emoji: '🍵', name: '小罐茶 大师作 龙井 50g 礼盒', price: 'S$ 45', original: '¥ 228', hot: '送礼首选' },
+    { emoji: '👟', name: '安踏 C37+ 跑步鞋 轻量版', price: '$ 47.10', original: '¥ 329', hot: '483人购买' },
+    { emoji: '🎧', name: 'Sony WH-1000XM5 降噪耳机', price: '$ 228.43', original: '¥ 1,599', hot: '本周美国热购' },
+    { emoji: '💄', name: '花西子 新彝族印象口红 定制版', price: '$ 19.90', original: '¥ 139', hot: '社区推荐' },
+    { emoji: '🍵', name: '小罐茶 大师作 龙井 50g 礼盒', price: '$ 32.67', original: '¥ 228', hot: '送礼首选' },
   ];
   const cards = items.map(item => `
     <div class="reco-card" onclick="buyRecoItem('${item.name}', '${item.price}')">
@@ -2108,13 +2346,13 @@ function renderRecommendCard() {
   return `
     <div class="community-section">
       <div class="community-header">
-        <div class="community-title">🌟 新加坡社区热购榜</div>
+        <div class="community-title">🌟 美国社区热购榜</div>
         <span class="see-all-link">查看全部 →</span>
       </div>
       <div class="community-body">
         <div class="reco-grid">${cards}</div>
         <div style="margin-top:12px;font-size:11px;color:var(--text-muted);text-align:center">
-          🇸🇬 以上来自新加坡华人社区本周真实购买数据 · 点击商品直接下单
+          🇺🇸 以上来自美国华人社区本周真实购买数据 · 点击商品直接下单
         </div>
       </div>
     </div>`;
@@ -2124,26 +2362,26 @@ function renderShippingCard() {
   return `
     <div class="shipping-card">
       <div class="shipping-header">
-        <div class="shipping-title">✈️ 区域集运费率（新加坡 · 本周有效）</div>
+        <div class="shipping-title">✈️ 区域集运费率（美国 · 本周有效）</div>
       </div>
       <div class="shipping-body">
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;padding:8px;background:var(--brand-light);border-radius:8px;">
-          💡 <strong>区域智能集运：</strong>平台按周将新加坡所有用户订单集中批量发货，单件商品即可享受批量运价
+          💡 <strong>区域智能集运：</strong>平台按周将美国所有用户订单集中批量发货，单件商品即可享受批量运价
         </div>
         <div class="shipping-region-grid">
           <div class="region-item">
             <div class="region-name">🟢 普通商品</div>
-            <div class="region-price">S$ 8 – 15 / kg</div>
-            <div class="region-time">约 7–12 个工作日</div>
-          </div>
-          <div class="region-item">
-            <div class="region-name">🔵 大件商品</div>
-            <div class="region-price">S$ 5 – 9 / kg</div>
+            <div class="region-price">$ 3 – 6 / kg</div>
             <div class="region-time">约 10–15 个工作日</div>
           </div>
           <div class="region-item">
+            <div class="region-name">🔵 大件商品</div>
+            <div class="region-price">$ 2 – 4 / kg</div>
+            <div class="region-time">约 12–18 个工作日</div>
+          </div>
+          <div class="region-item">
             <div class="region-name">🟡 精品/易碎</div>
-            <div class="region-price">S$ 12 – 20 / kg</div>
+            <div class="region-price">$ 5 – 9 / kg</div>
             <div class="region-time">含防护包装</div>
           </div>
           <div class="region-item">
@@ -2177,7 +2415,7 @@ function renderPaymentCard(product) {
           <span class="payment-row-value">${product.currency} ${product.shipping.toFixed(2)}</span>
         </div>
         <div class="payment-row">
-          <span class="payment-row-label" style="color:var(--success);font-size:11px">✓ 已匹配新加坡 Buona Vista 集货点</span>
+          <span class="payment-row-label" style="color:var(--success);font-size:11px">✓ 已匹配 Rowland Heights 批次 (US-260715)</span>
           <span style="font-size:11px;color:var(--text-muted)">下周一集运发货</span>
         </div>
         <div class="payment-divider"></div>
@@ -2189,13 +2427,16 @@ function renderPaymentCard(product) {
       <div style="padding:0 16px 8px;font-size:12px;color:var(--text-muted)">选择支付方式</div>
       <div class="payment-methods">
         <div class="payment-method selected" onclick="selectPayMethod(this)">
-          <span class="payment-method-icon">🏦</span>PayNow
-        </div>
-        <div class="payment-method" onclick="selectPayMethod(this)">
           <span class="payment-method-icon">💳</span>信用卡
         </div>
         <div class="payment-method" onclick="selectPayMethod(this)">
           <span class="payment-method-icon">🔵</span>PayPal
+        </div>
+        <div class="payment-method" onclick="selectPayMethod(this)">
+          <span class="payment-method-icon">🏦</span>Zelle
+        </div>
+        <div class="payment-method" onclick="selectPayMethod(this)">
+          <span class="payment-method-icon">🍎</span>Apple Pay
         </div>
       </div>
       <div class="payment-actions">
@@ -2212,7 +2453,7 @@ function renderSuccessCard(orderNo) {
       <div class="success-icon">🎉</div>
       <div class="success-title">支付成功！订单已创建</div>
       <div class="success-desc">
-        买手将于今日内开始采购，商品将在下周一（7月15日）随新加坡区域集运批次统一发货，预计 7月22–25日送达您家门口
+        买手将于今日内开始采购，商品将在下周一（7月15日）随美国区域集运批次统一发货，预计 7月22–25日送达提货地址
       </div>
       <div class="success-order-id">订单号：HG2607130003</div>
       <button class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:8px" onclick="trackNewOrder()">
@@ -2236,7 +2477,7 @@ function confirmPayment() {
   renderTyping();
   setTimeout(() => {
     renderAICard(renderSuccessCard('HG2607130003'));
-    renderAIMsg('<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>每周一统一发货，本次将于 <strong>7月15日</strong> 随新加坡批次发出</p><p>🔔 <strong>通知方式：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>💬 <strong>有问题吗？</strong>直接告诉我就好！</p>', true);
+    renderAIMsg('<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>每周一统一发货，本次将于 <strong>7月15日</strong> 随美国批次发出</p><p>🔔 <strong>通知方式：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>💬 <strong>有问题吗？</strong>直接告诉我就好！</p>', true);
   }, 1200);
 }
 
@@ -2247,7 +2488,7 @@ function addToWishlist() {
   }
   renderTyping();
   setTimeout(() => {
-    renderAIMsg('❤️ 已加入心愿单！商品将保存在您的心愿单中，有需要随时下单。<br><br>目前您的心愿单共有 <strong>' + wishlist.length + '</strong> 件商品，总价约 <strong>S$ 408</strong>。');
+    renderAIMsg('❤️ 已加入心愿单！商品将保存在您的心愿单中，有需要随时下单。<br><br>目前您的心愿单共有 <strong>' + wishlist.length + '</strong> 件商品，总价约 <strong>$ 295</strong>。');
     showToast('已加入心愿单 ❤️');
   }, 600);
 }
@@ -2255,34 +2496,34 @@ function addToWishlist() {
 function shareProduct() {
   showToast('已生成分享链接，可发送给朋友 📤');
   setTimeout(() => {
-    renderAIMsg('🔗 商品分享链接已生成！您可以将链接发送给朋友，他们点击后可直接在 HiGoBuy 下单。<br><br>如果朋友通过您的链接成功下单，您将获得 <strong>S$ 2</strong> 的社区返佣哦～');
+    renderAIMsg('🔗 商品分享链接已生成！您可以将链接发送给朋友，他们点击后可直接在 HiGoBuy 下单。<br><br>如果朋友通过您的链接成功下单，您将获得 <strong>$ 2</strong> 的社区返佣哦～');
   }, 800);
 }
 
 const ADDRESS_OPTIONS = [
   {
     id: 'addr1',
-    tag: '您的常用地址', tagStyle: 'tag-brand',
+    tag: '您的默认地址', tagStyle: 'tag-brand',
     icon: '🏠',
     name: '林晓雯',
-    detail: '123 Commonwealth Ave #08-12, Buona Vista, S\'pore 140123',
+    detail: '1888 Commerce Ave Apt 204, Rowland Heights, CA 91748',
     reason: '📦 与本周 18 件订单同批次集运 · 运费最优'
   },
   {
     id: 'addr2',
     tag: '本周货量最大', tagStyle: 'tag-success',
     icon: '👨‍👩‍👧',
-    name: '陈志明（家人）',
-    detail: '221 Jurong East St 13 #12-56, Jurong East, S\'pore 600221',
+    name: '陈志明（代收人）',
+    detail: '15200 Amar Rd #108, Hacienda Heights, CA 91745',
     reason: '🔥 本批次货量最大 · 47 件 · 单件集运费最低'
   },
   {
     id: 'addr3',
     tag: '本周货值最高', tagStyle: 'tag-warning',
     icon: '👤',
-    name: '林美华（朋友）',
-    detail: '456 Tampines St 42 #03-08, Tampines, S\'pore 520456',
-    reason: '💎 本批次货值最高 S$ 3,240 · 享优先配送保障'
+    name: '林美华（代收人）',
+    detail: '21688 Valley Blvd #8, Walnut, CA 91789',
+    reason: '💎 本批次货值最高 $ 3,240 · 享优先配送保障'
   }
 ];
 
@@ -2321,12 +2562,59 @@ function selectAddress(addrId) {
   if (item) item.classList.add('selected');
   setTimeout(() => {
     renderUserMsg(`✓ 选择此地址：${addr.name}\n${addr.detail}`);
+    conversationState = 'willing_to_receive';
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg('<p>地址已选择！最后一个问题：</p>');
+      setTimeout(() => renderAICard(renderWillingCard()), 300);
+    }, 800);
+  }, 700);
+}
+
+function renderWillingCard() {
+  return `
+    <div class="willing-card">
+      <div class="willing-header">📦 是否愿意代他人收货？</div>
+      <div class="willing-option" id="willing-yes" onclick="selectWilling('yes')">
+        <div class="willing-radio"></div>
+        <div class="willing-content">
+          <div class="willing-title">✅ 愿意 — 我的地址可能成为社区提货点</div>
+          <div class="willing-desc">当我的地址被选为批次提货点时，我可以代收整批包裹，其他用户前来取件。</div>
+          <div class="willing-reward">🎁 奖励：集运费 8 折 + 50 平台积分/次</div>
+        </div>
+      </div>
+      <div class="willing-option" id="willing-no" onclick="selectWilling('no')">
+        <div class="willing-radio"></div>
+        <div class="willing-content">
+          <div class="willing-title">❌ 不愿意 — 包裹直接配送到我的家庭地址</div>
+          <div class="willing-desc">包裹将直接寄到我的家庭地址，由我本人签收。不影响本次订单。</div>
+        </div>
+      </div>
+      <div class="willing-footer">💡 此选择仅更新您的意愿偏好，不影响本次订单的配送地址</div>
+    </div>`;
+}
+
+function selectWilling(choice) {
+  if (conversationState !== 'willing_to_receive') return;
+  document.querySelectorAll('.willing-option').forEach(el => el.classList.remove('selected'));
+  const el = document.getElementById(choice === 'yes' ? 'willing-yes' : 'willing-no');
+  if (el) el.classList.add('selected');
+  const label = choice === 'yes' ? '愿意代他人收货' : '不愿意代收';
+  setTimeout(() => {
+    renderUserMsg(label);
     conversationState = 'payment';
     renderTyping();
     setTimeout(() => {
-      if (pendingProduct) renderAICard(renderPaymentCard(pendingProduct));
-    }, 1000);
-  }, 700);
+      if (choice === 'yes') {
+        renderAIMsg('<p>感谢您的热心！🎉 您的偏好已更新。</p><p>作为回报，您下次集运可享 <strong>8 折运费</strong> + <strong>50 积分</strong>奖励。</p>');
+      } else {
+        renderAIMsg('<p>好的，已为您设置。包裹将直接配送到您的地址。</p>');
+      }
+      setTimeout(() => {
+        if (pendingProduct) renderAICard(renderPaymentCard(pendingProduct));
+      }, 600);
+    }, 800);
+  }, 400);
 }
 
 function startPurchase() {
@@ -2356,7 +2644,7 @@ function buyWishlistItem(id) {
   conversationState = 'idle';
   renderTyping();
   setTimeout(() => {
-    renderAIMsg(`好的！正在为您创建 <strong>${item.name}</strong> 的订单，货款 <strong>${item.price}</strong>，集运费预估 <strong>S$ 12</strong>。<br><br>请确认收货地址：<strong>新加坡 Buona Vista · 123 Commonwealth Ave #08-12</strong>`);
+    renderAIMsg(`好的！正在为您创建 <strong>${item.name}</strong> 的订单，货款 <strong>${item.price}</strong>，集运费预估 <strong>$ 4</strong>。<br><br>请确认收货地址：<strong>Rowland Heights, CA · 1888 Commerce Ave Apt 204</strong>`);
     document.getElementById('inputField').placeholder = '确认地址后继续…';
   }, 1000);
 }
@@ -2375,7 +2663,7 @@ function buyRecoItem(name, price) {
   conversationState = 'idle';
   renderTyping();
   setTimeout(() => {
-    renderAIMsg(`很好的选择！<strong>${name}</strong> 在新加坡社区非常受欢迎。<br><br>请将商品的淘宝/京东链接发给我，我来帮您通过 Flylink 转化并下单。<br><br>如果没有链接，也可以直接说"帮我找这款商品"，我来协助搜索 😊`);
+    renderAIMsg(`很好的选择！<strong>${name}</strong> 在美国社区非常受欢迎。<br><br>请将商品的淘宝/京东链接发给我，我来帮您通过 Flylink 转化并下单。<br><br>如果没有链接，也可以直接说"帮我找这款商品"，我来协助搜索 😊`);
   }, 900);
 }
 
@@ -2465,7 +2753,7 @@ function processInput(text) {
   if (lower.includes('推荐') || lower.includes('热门') || lower.includes('好物') || lower.includes('trending') || lower.includes('popular') || lower.includes('什么值得买') || lower.includes('榜单')) {
     renderTyping();
     setTimeout(() => {
-      renderAIMsg('🌟 根据新加坡华人社区本周购买数据，为您整理了热门好物榜单：');
+      renderAIMsg('🌟 根据美国华人社区本周购买数据，为您整理了热门好物榜单：');
       setTimeout(() => renderAICard(renderRecommendCard()), 400);
     }, 900);
     return;
@@ -2487,9 +2775,9 @@ function processInput(text) {
     setTimeout(() => {
       renderAIMsg(`<p>📖 <strong>HiGoBuy 购物流程超简单，4步搞定：</strong></p>
 <p><strong>① 发链接</strong> — 把淘宝/京东/天猫商品链接发给我</p>
-<p><strong>② 确认下单</strong> — 我通过 Flylink 解析商品，显示新加坡价格（含集运），您确认即可</p>
-<p><strong>③ 支付</strong> — 支持 PayNow / 信用卡 / PayPal，货款归买手，运费归平台分开结算</p>
-<p><strong>④ 坐等收货</strong> — 每周一统一集运发货，约7–12天到您家门口，全程物流通知</p>
+<p><strong>② 确认下单</strong> — 我通过 Flylink 解析商品，显示美元价格（含集运），您确认即可</p>
+<p><strong>③ 支付</strong> — 支持信用卡 / PayPal / Zelle / Apple Pay，货款归买手，运费归平台分开结算</p>
+<p><strong>④ 坐等收货</strong> — 每周一统一集运发货，约10–15天送达提货地址，全程物流通知</p>
 <p style="margin-top:4px">试试发一个商品链接给我吧！🔗</p>`);
     }, 900);
     return;
@@ -2499,7 +2787,7 @@ function processInput(text) {
   if (lower.includes('你好') || lower.includes('hello') || lower.match(/^hi\b/) || lower.includes('嗨') || lower.includes('早') || lower.includes('在吗')) {
     renderTyping();
     setTimeout(() => {
-      renderAIMsg(`<p>👋 您好，林晓雯！我是 HiGo 助手，随时为您服务～</p><p>您可以：<br>🔗 粘贴淘宝/京东链接直接下单<br>📦 查询 2 个进行中的订单<br>❤️ 查看 ${wishlist.length} 件心愿单商品<br>⭐ 看看新加坡社区好物推荐</p><p>今天想买什么？</p>`);
+      renderAIMsg(`<p>👋 您好，林晓雯！我是 HiGo 助手，随时为您服务～</p><p>您可以：<br>🔗 粘贴淘宝/京东链接直接下单<br>📦 查询 2 个进行中的订单<br>❤️ 查看 ${wishlist.length} 件心愿单商品<br>⭐ 看看美国社区好物推荐</p><p>今天想买什么？</p>`);
     }, 600);
     return;
   }
@@ -2564,7 +2852,7 @@ function handleProductLink(product) {
 
       // Show text after product
       setTimeout(() => {
-        renderAIMsg(`<p>✅ Flylink 解析完成！以上是 <strong>${product.source}</strong> 商品的完整信息，已换算为新加坡元。</p><p>🚀 <strong>集运优惠说明：</strong>运费已按区域集运批量价格计算，比单件邮寄节省约 <strong>35%</strong></p><p>点击 <strong>立即购买</strong> 开始下单，或 ❤️ 加入心愿单稍后购买</p>`, true);
+        renderAIMsg(`<p>✅ Flylink 解析完成！以上是 <strong>${product.source}</strong> 商品的完整信息，已换算为美元。</p><p>🚀 <strong>集运优惠说明：</strong>运费已按区域集运批量价格计算，比单件邮寄节省约 <strong>35%</strong></p><p>点击 <strong>立即购买</strong> 开始下单，或 ❤️ 加入心愿单稍后购买</p>`, true);
       }, 300);
     }, 2400);
   }, 600);
@@ -2629,7 +2917,7 @@ function newChat() {
           <div class="welcome-card-icon">🌟</div>
           <div class="welcome-card-content">
             <div class="welcome-card-title">社区好物推荐</div>
-            <div class="welcome-card-desc">新加坡华人社区本周热购榜单</div>
+            <div class="welcome-card-desc">美国华人社区本周热购榜单</div>
           </div>
         </div>
       </div>
@@ -2646,25 +2934,27 @@ const CHAT_HISTORIES = {
     steps: [
       { role: 'user', text: '这双 Air Force 1 帮我看看，想买来日常穿\nhttps://item.taobao.com/item.htm?id=712345678901' },
       { role: 'ai', type: 'product', product: 'taobao_nike' },
-      { role: 'ai', text: '<p>✅ Flylink 解析完成！以上是淘宝商品完整信息，已换算为新加坡元。</p><p>🚀 <strong>集运优惠：</strong>运费已按区域集运批量价格计算，比单件邮寄节省约 <strong>35%</strong></p><p>点击 <strong>立即购买</strong> 开始下单，或加入心愿单稍后购买 😊</p>' },
+      { role: 'ai', text: '<p>✅ Flylink 解析完成！以上是淘宝商品完整信息，已换算为美元。</p><p>🚀 <strong>集运优惠：</strong>运费已按区域集运批量价格计算，比单件邮寄节省约 <strong>35%</strong></p><p>点击 <strong>立即购买</strong> 开始下单，或加入心愿单稍后购买 😊</p>' },
       { role: 'user', text: '价格不错！帮我买白色这双，US 8 码' },
       { role: 'ai', type: 'address_card' },
+      { role: 'ai', type: 'willing_card' },
+      { role: 'user', text: '愿意代他人收货' },
       { role: 'ai', type: 'payment', product: 'taobao_nike' },
-      { role: 'user', text: '已用 PayNow 付款了 ✅' },
+      { role: 'user', text: '已用信用卡付款了 ✅' },
       { role: 'ai', type: 'success', orderNo: 'HG2607120001' },
-      { role: 'ai', text: '<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>本次将于 <strong>7月15日（周一）</strong> 随新加坡集运批次统一发出</p><p>🔔 <strong>通知：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>祝您购物愉快！👟✨</p>' },
+      { role: 'ai', text: '<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>本次将于 <strong>7月15日（周一）</strong> 随美国集运批次统一发出</p><p>🔔 <strong>通知：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>祝您购物愉快！👟✨</p>' },
     ]
   },
   chat2: {
     title: '戴森吸尘器代购咨询',
     steps: [
       { role: 'user', text: '你好，我想买戴森吸尘器，京东上有一款 V12，帮我看看值不值得买？' },
-      { role: 'ai', text: '<p>您好！Dyson V12 是目前戴森无绳系列的旗舰款，口碑非常好 💪</p><p>请把京东商品链接发给我，我来通过 <strong>Flylink</strong> 解析最新价格和库存，帮您换算成新加坡元并计算集运费用。</p>' },
+      { role: 'ai', text: '<p>您好！Dyson V12 是目前戴森无绳系列的旗舰款，口碑非常好 💪</p><p>请把京东商品链接发给我，我来通过 <strong>Flylink</strong> 解析最新价格和库存，帮您换算成美元并计算集运费用。</p>' },
       { role: 'user', text: '好的，这是链接：\nhttps://item.jd.com/100050267756.html' },
       { role: 'ai', type: 'product', product: 'jd_dyson' },
-      { role: 'ai', text: '<p>✅ Flylink 解析完成！京东自营正品，AI 核验通过。</p><p>💡 <strong>价格说明：</strong>目前京东价 ¥3,799，换算 <strong>S$ 749</strong>，比新加坡 Dyson 官网（约 S$ 1,099）便宜约 <strong>32%</strong>，非常划算！</p>' },
-      { role: 'user', text: '集运费 S$45 感觉有点贵？这个是怎么算的' },
-      { role: 'ai', text: '<p>理解您的顾虑！来解释一下 👇</p><p>📦 Dyson V12 重约 <strong>2.2kg</strong>，加上防震包装体积重约 5kg，按大件集运价 <strong>S$ 9/kg</strong> 计算 = S$ 45</p><p>🎯 <strong>对比参考：</strong>走 DHL/FedEx 单独寄同等重量约 S$ 80–100。我们区域集运为您节省了 <strong>约 40%</strong></p><p>加上比新加坡官网便宜的 S$ 350，整体性价比非常高！</p>' },
+      { role: 'ai', text: '<p>✅ Flylink 解析完成！京东自营正品，AI 核验通过。</p><p>💡 <strong>价格说明：</strong>目前京东价 ¥3,799，换算 <strong>$542.71</strong>，比美国 Dyson 官网（约 $799）便宜约 <strong>32%</strong>，非常划算！</p>' },
+      { role: 'user', text: '集运费 $15 感觉有点贵？这个是怎么算的' },
+      { role: 'ai', text: '<p>理解您的顾虑！来解释一下 👇</p><p>📦 Dyson V12 重约 <strong>2.2kg</strong>，加上防震包装体积重约 3kg，按大件集运价 <strong>$4/kg</strong> 计算，加上防护包装费 = $15</p><p>🎯 <strong>对比参考：</strong>走 DHL/FedEx 单独寄同等重量约 $50–70。我们区域集运为您节省了 <strong>约 60%</strong></p><p>加上比美国官网便宜的 $256，整体性价比非常高！</p>' },
       { role: 'user', text: '说得有道理！不过我再对比一下，先加入心愿单' },
       { role: 'ai', text: '<p>❤️ 已加入心愿单！</p><p>📊 <strong>小提醒：</strong>戴森产品价格波动较大，目前是近期低点。价格变动时我会第一时间通知您 🔔</p><p>另外，如果有朋友也在考虑，拼单集运可以进一步摊薄运费～ 有问题随时找我！</p>' },
     ]
@@ -2893,6 +3183,35 @@ async function replayConversation(chatId) {
           + '<br><span style="font-size:12px;opacity:0.85">' + addr.detail + '</span></div>';
         msgs.appendChild(ug);
         scrollToBottom();
+        conversationState = 'idle';
+
+      } else if (step.type === 'willing_card') {
+        await replayDelay(600);
+        const tEl2 = appendReplayTyping(msgs);
+        await replayDelay(500);
+        tEl2.remove();
+
+        const wG = document.createElement('div');
+        wG.className = 'msg-group ai';
+        const wMeta = document.createElement('div');
+        wMeta.className = 'msg-meta';
+        wMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+        const wBubble = document.createElement('div');
+        wBubble.className = 'msg-bubble';
+        wG.appendChild(wMeta);
+        wG.appendChild(wBubble);
+        msgs.appendChild(wG);
+        scrollToBottom();
+        await typeIntoElement(wBubble, '<p>地址已选择！最后一个问题：</p>');
+        await replayDelay(300);
+
+        conversationState = 'willing_to_receive';
+        appendReplayAICard(msgs, renderWillingCard(), timeStr);
+        await replayDelay(1200);
+
+        const yesOpt = document.getElementById('willing-yes');
+        if (yesOpt) { yesOpt.classList.add('selected'); yesOpt.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+        await replayDelay(800);
         conversationState = 'idle';
 
       } else if (step.type === 'payment') {
