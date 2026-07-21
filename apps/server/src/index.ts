@@ -5,6 +5,7 @@ import { config } from './lib/config.js';
 import { prisma } from './lib/prisma.js';
 import { redis } from './lib/redis.js';
 import { registerRoutes } from './api/routes.js';
+import { createRateLimitMiddleware } from './api/middleware/rateLimit.js';
 
 const app = Fastify({
   logger: {
@@ -37,6 +38,13 @@ async function start() {
   await app.register(cors, {
     origin: config.corsOrigin,
     credentials: true,
+  });
+
+  // 全局限流（排除健康检查）
+  const rateLimiter = createRateLimitMiddleware(120, 60);
+  app.addHook('onRequest', async (req, reply) => {
+    if (req.url === '/api/health') return;
+    await rateLimiter(req, reply);
   });
 
   await registerRoutes(app);
