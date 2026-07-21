@@ -1,0 +1,2961 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HiGoBuy · 海卖购 — AI购物助手</title>
+  <style>
+    :root {
+      --brand: #7C3AED;
+      --brand-light: #EDE9FE;
+      --brand-dark: #5B21B6;
+      --brand-glow: rgba(124,58,237,0.15);
+      --accent: #F97316;
+      --accent-light: #FFF7ED;
+      --success: #10B981;
+      --success-light: #D1FAE5;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --info: #3B82F6;
+
+      --sidebar-bg: #13111A;
+      --sidebar-border: rgba(255,255,255,0.06);
+      --sidebar-hover: rgba(255,255,255,0.06);
+      --sidebar-active: rgba(124,58,237,0.25);
+      --sidebar-text: #C4B5FD;
+      --sidebar-muted: #64748B;
+
+      --bg: #F5F5FA;
+      --surface: #FFFFFF;
+      --surface-2: #F8F8FD;
+      --border: #E8E6F0;
+      --border-light: #F1F0F8;
+
+      --text: #1A1625;
+      --text-2: #4B4466;
+      --text-muted: #8B83A8;
+
+      --shadow-sm: 0 1px 3px rgba(100,80,160,0.08);
+      --shadow: 0 4px 12px rgba(100,80,160,0.1);
+      --shadow-lg: 0 12px 36px rgba(100,80,160,0.14);
+
+      --radius-sm: 8px;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-bubble: 18px;
+
+      --sidebar-w: 256px;
+      --header-h: 56px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.2); border-radius: 2px; }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      border-right: 1px solid var(--sidebar-border);
+    }
+
+    .sidebar-logo {
+      padding: 20px 16px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--sidebar-border);
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #7C3AED, #F97316);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #F0EDFF;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--sidebar-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .new-chat-btn {
+      margin: 12px;
+      padding: 10px 14px;
+      background: rgba(124,58,237,0.2);
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: var(--radius);
+      color: #C4B5FD;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .new-chat-btn:hover {
+      background: rgba(124,58,237,0.3);
+      border-color: rgba(124,58,237,0.5);
+    }
+
+    .sidebar-section {
+      padding: 4px 8px;
+    }
+
+    .sidebar-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--sidebar-muted);
+      padding: 8px 8px 4px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--sidebar-text);
+      font-size: 13px;
+    }
+
+    .sidebar-item:hover { background: var(--sidebar-hover); }
+    .sidebar-item.active { background: var(--sidebar-active); color: #DDD6FE; }
+
+    .sidebar-item-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+
+    .sidebar-item-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .sidebar-badge {
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .sidebar-item-time {
+      font-size: 10px;
+      color: var(--sidebar-muted);
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--sidebar-border);
+      margin: 8px 12px;
+    }
+
+    .sidebar-spacer { flex: 1; }
+
+    .sidebar-user {
+      padding: 12px;
+      border-top: 1px solid var(--sidebar-border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #7C3AED, #EC4899);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .user-info { flex: 1; overflow: hidden; }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E2E8F0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-location {
+      font-size: 11px;
+      color: var(--sidebar-muted);
+    }
+
+    /* ===== MAIN AREA ===== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      height: var(--header-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+    }
+
+    .chat-header-title {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .chat-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .header-btn:hover {
+      background: var(--surface-2);
+      color: var(--brand);
+      border-color: var(--brand-light);
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--success-light);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ===== MESSAGES ===== */
+    .messages-wrap {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 0;
+    }
+
+    .messages-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ===== WELCOME SCREEN ===== */
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 32px;
+    }
+
+    .welcome-logo {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, #7C3AED 0%, #F97316 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(124,58,237,0.35);
+    }
+
+    .welcome-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .welcome-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 380px;
+      line-height: 1.7;
+    }
+
+    .welcome-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 32px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .welcome-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .welcome-card:hover {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px var(--brand-glow);
+      transform: translateY(-1px);
+    }
+
+    .welcome-card-icon {
+      font-size: 24px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .welcome-card-content {}
+
+    .welcome-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .welcome-card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .welcome-tips {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ===== MESSAGE BUBBLES ===== */
+    .msg-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 24px;
+    }
+
+    .msg-group.user { align-items: flex-end; }
+    .msg-group.ai { align-items: flex-start; }
+
+    .msg-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .ai-avatar {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #7C3AED, #F97316);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .msg-sender-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .msg-bubble {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: var(--radius-bubble);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .msg-group.user .msg-bubble {
+      background: linear-gradient(135deg, #7C3AED, #6D28D9);
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+
+    .msg-group.ai .msg-bubble {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 6px;
+    }
+
+    .msg-bubble p { margin-bottom: 8px; }
+    .msg-bubble p:last-child { margin-bottom: 0; }
+    .msg-bubble strong { font-weight: 600; }
+
+    /* ===== TYPING INDICATOR ===== */
+    .typing-bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-bubble);
+      border-bottom-left-radius: 6px;
+      padding: 14px 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--brand);
+      border-radius: 50%;
+      animation: typingBounce 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ===== RICH MESSAGE CARDS ===== */
+    .msg-card-wrap {
+      max-width: 420px;
+    }
+
+    /* Flylink Processing Card */
+    .flylink-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .flylink-header {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, var(--brand-light), #FFF7ED);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flylink-badge {
+      background: var(--brand);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .flylink-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brand-dark);
+    }
+
+    /* Product Card */
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .product-img-wrap {
+      position: relative;
+      height: 200px;
+      background: linear-gradient(135deg, #F3F0FF, #FFF7ED);
+      overflow: hidden;
+    }
+
+    .product-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .product-source-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .product-verified-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--success);
+      color: white;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .product-body {
+      padding: 14px 16px;
+    }
+
+    .product-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .product-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .product-price-main {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .product-price-currency {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .product-price-original {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .product-meta-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .product-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-2);
+    }
+
+    .product-shipping-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+
+    .product-shipping-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .product-shipping-row:not(:last-child) { margin-bottom: 6px; }
+
+    .product-shipping-label { color: var(--text-muted); }
+
+    .product-shipping-value { font-weight: 600; color: var(--text); }
+
+    .product-shipping-total {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: white;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-primary:hover { background: var(--brand-dark); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+      background: var(--brand-light);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: white;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-accent:hover { background: #EA6C0A; }
+
+    /* Order Card */
+    .order-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .order-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .order-id {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .order-id span {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .order-status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .status-collecting {
+      background: var(--warning-light, #FEF3C7);
+      color: var(--warning);
+    }
+
+    .status-transit {
+      background: var(--brand-light);
+      color: var(--brand);
+    }
+
+    .status-delivered {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .order-body { padding: 16px; }
+
+    .order-timeline {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    .order-timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-step {
+      position: relative;
+      padding: 0 0 16px 16px;
+    }
+
+    .timeline-step:last-child { padding-bottom: 0; }
+
+    .timeline-dot {
+      position: absolute;
+      left: -13px;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--border);
+      border: 2px solid var(--surface);
+    }
+
+    .timeline-dot.done { background: var(--success); }
+    .timeline-dot.current { background: var(--brand); animation: pulse 2s infinite; }
+
+    .timeline-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .timeline-label.done { color: var(--text); }
+    .timeline-label.current { color: var(--brand); }
+
+    .timeline-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .order-items-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+
+    .order-item-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Payment Card */
+    .payment-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .payment-header {
+      padding: 16px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--brand-light), #FFF7ED);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .payment-amount {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .payment-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .payment-breakdown {
+      padding: 14px 16px;
+    }
+
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+
+    .payment-row-label { color: var(--text-muted); }
+    .payment-row-value { font-weight: 600; color: var(--text); }
+    .payment-row-total .payment-row-label { font-weight: 700; color: var(--text); }
+    .payment-row-total .payment-row-value { color: var(--accent); font-size: 15px; }
+
+    .payment-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0;
+    }
+
+    .payment-methods {
+      padding: 0 16px 14px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .payment-method {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      transition: all 0.15s;
+    }
+
+    .payment-method.selected {
+      border-color: var(--brand);
+      background: var(--brand-light);
+      color: var(--brand);
+    }
+
+    .payment-method-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+    .payment-actions { padding: 0 16px 16px; }
+
+    /* Success Card */
+    .success-card {
+      background: var(--surface);
+      border: 1px solid var(--success);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 0 0 4px var(--success-light);
+    }
+
+    .success-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .success-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .success-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    .success-order-id {
+      font-size: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: monospace;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    /* Recommendation Grid */
+    .reco-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .reco-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .reco-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: var(--brand);
+    }
+
+    .reco-img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      background: linear-gradient(135deg, #F3F0FF, #FFF7ED);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+
+    .reco-body { padding: 10px; }
+
+    .reco-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 4px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .reco-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .reco-original {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .reco-hot {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Wishlist card */
+    .wishlist-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .wishlist-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .wishlist-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .wishlist-count {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .wishlist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .wishlist-item:last-child { border-bottom: none; }
+    .wishlist-item:hover { background: var(--surface-2); }
+
+    .wishlist-item-img {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .wishlist-item-info { flex: 1; overflow: hidden; }
+
+    .wishlist-item-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .wishlist-item-price {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+
+    .wishlist-item-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .wishlist-action-btn {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .wishlist-action-buy {
+      background: var(--brand);
+      color: white;
+    }
+
+    .wishlist-action-remove {
+      background: var(--surface-2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* Shipping Calculator */
+    .shipping-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .shipping-header {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, var(--brand-light), #FFF7ED);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .shipping-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brand-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .shipping-body { padding: 14px 16px; }
+
+    .shipping-region-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .region-item {
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+    }
+
+    .region-name {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .region-price {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .region-time { color: var(--text-muted); font-size: 10px; }
+
+    /* ===== INPUT AREA ===== */
+    .input-area {
+      padding: 16px 20px 20px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .input-inner {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .input-box {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .input-box:focus-within {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px var(--brand-glow);
+    }
+
+    .input-field {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      color: var(--text);
+      resize: none;
+      max-height: 120px;
+      line-height: 1.5;
+      font-family: inherit;
+    }
+
+    .input-field::placeholder { color: var(--text-muted); }
+
+    .input-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .input-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .input-icon-btn:hover {
+      background: var(--brand-light);
+      color: var(--brand);
+    }
+
+    .send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: var(--brand);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: white;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover { background: var(--brand-dark); transform: scale(1.05); }
+    .send-btn:disabled { background: var(--border); cursor: not-allowed; transform: none; }
+
+    .input-hint {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .input-chips {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 5px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .chip:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+      background: var(--brand-light);
+    }
+
+    /* ===== UTILITY ===== */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .tag-brand { background: var(--brand-light); color: var(--brand); }
+    .tag-success { background: var(--success-light); color: var(--success); }
+    .tag-warning { background: #FEF3C7; color: var(--warning); }
+    .tag-accent { background: var(--accent-light); color: var(--accent); }
+
+    .divider-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin: 4px 0 8px;
+    }
+
+    .divider-text::before, .divider-text::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Feedback row */
+    .msg-feedback {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      padding-left: 4px;
+    }
+
+    .feedback-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .feedback-btn:hover { background: var(--brand-light); border-color: var(--brand); }
+
+    /* Loading bar for Flylink */
+    .flylink-progress {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 10px 16px;
+      overflow: hidden;
+    }
+
+    .flylink-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+      border-radius: 2px;
+      animation: flylinkLoad 1.5s ease-in-out;
+    }
+
+    @keyframes flylinkLoad {
+      0% { width: 0%; }
+      30% { width: 40%; }
+      60% { width: 70%; }
+      90% { width: 92%; }
+      100% { width: 100%; }
+    }
+
+    .flylink-steps {
+      padding: 10px 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .flylink-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .flylink-step.done { color: var(--success); }
+    .flylink-step.loading { color: var(--brand); }
+
+    .flylink-step-icon { font-size: 14px; }
+
+    /* Community badge */
+    .community-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .community-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .community-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .see-all-link {
+      font-size: 11px;
+      color: var(--brand);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .community-body { padding: 12px 16px; }
+
+    /* Emoji product placeholders */
+    .product-emoji-bg {
+      width: 100%;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      background: linear-gradient(135deg, #F3F0FF 0%, #FFF7ED 100%);
+    }
+
+    /* ===== ADDRESS RECOMMENDATION CARD ===== */
+    .address-rec-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .address-rec-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--surface-2), var(--brand-light));
+    }
+
+    .address-rec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+      transition: all 0.18s;
+      border-left: 3px solid transparent;
+    }
+
+    .address-rec-item:last-of-type { border-bottom: none; }
+
+    .address-rec-item:hover {
+      background: var(--surface-2);
+      border-left-color: rgba(124,58,237,0.4);
+    }
+
+    .address-rec-item.selected {
+      background: var(--brand-light);
+      border-left-color: var(--brand);
+    }
+
+    .address-rec-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+
+    .address-rec-content { flex: 1; min-width: 0; }
+
+    .address-rec-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .address-rec-detail {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+
+    .address-rec-reason {
+      font-size: 11px;
+      color: var(--brand);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .address-check {
+      font-size: 18px;
+      color: var(--brand);
+      opacity: 0;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .address-rec-item.selected .address-check { opacity: 1; }
+
+    /* ===== TYPEWRITER CURSOR ===== */
+    .type-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 0.9em;
+      background: var(--brand);
+      vertical-align: text-bottom;
+      margin-left: 1px;
+      border-radius: 1px;
+      animation: cursorBlink 0.65s step-end infinite;
+    }
+
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🛍️</div>
+    <div class="logo-text">
+      <div class="logo-name">HiGoBuy</div>
+      <div class="logo-sub">海卖购 · AI购物助手</div>
+    </div>
+  </div>
+
+  <button class="new-chat-btn" onclick="newChat()">
+    <span>✏️</span>
+    <span>新对话</span>
+  </button>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">最近对话</div>
+    <div class="sidebar-item active" onclick="loadChat('current')">
+      <span class="sidebar-item-icon">💬</span>
+      <span class="sidebar-item-label">淘宝Air Force 1购买</span>
+      <span class="sidebar-item-time">刚刚</span>
+    </div>
+    <div class="sidebar-item" onclick="loadChat('chat2')">
+      <span class="sidebar-item-icon">💬</span>
+      <span class="sidebar-item-label">戴森吸尘器代购咨询</span>
+      <span class="sidebar-item-time">昨天</span>
+    </div>
+    <div class="sidebar-item" onclick="loadChat('chat3')">
+      <span class="sidebar-item-icon">💬</span>
+      <span class="sidebar-item-label">新加坡集运费用查询</span>
+      <span class="sidebar-item-time">7月10日</span>
+    </div>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">我的购物</div>
+    <div class="sidebar-item" onclick="quickAction('wishlist')">
+      <span class="sidebar-item-icon">❤️</span>
+      <span class="sidebar-item-label">心愿单</span>
+      <span class="sidebar-badge">3</span>
+    </div>
+    <div class="sidebar-item" onclick="quickAction('orders')">
+      <span class="sidebar-item-icon">📦</span>
+      <span class="sidebar-item-label">我的订单</span>
+      <span class="sidebar-badge">2</span>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">快捷功能</div>
+    <div class="sidebar-item" onclick="quickAction('recommend')">
+      <span class="sidebar-item-icon">⭐</span>
+      <span class="sidebar-item-label">好物推荐</span>
+    </div>
+    <div class="sidebar-item" onclick="quickAction('shipping')">
+      <span class="sidebar-item-icon">✈️</span>
+      <span class="sidebar-item-label">运费计算</span>
+    </div>
+    <div class="sidebar-item" onclick="quickAction('buyerguide')">
+      <span class="sidebar-item-icon">📖</span>
+      <span class="sidebar-item-label">购物指南</span>
+    </div>
+  </div>
+
+  <div class="sidebar-spacer"></div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar">林</div>
+    <div class="user-info">
+      <div class="user-name">林晓雯</div>
+      <div class="user-location">📍 新加坡 · Buona Vista</div>
+    </div>
+    <span style="color: var(--sidebar-muted); font-size: 16px;">⚙️</span>
+  </div>
+</aside>
+
+<!-- ===== MAIN CHAT ===== -->
+<main class="main">
+  <div class="chat-header">
+    <div class="chat-header-title" id="chatTitle">AI购物助手</div>
+    <div class="chat-header-actions">
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        <span>Flylink 已就绪</span>
+      </div>
+      <button class="header-btn" title="分享">🔗</button>
+      <button class="header-btn" title="设置">⚙️</button>
+    </div>
+  </div>
+
+  <div class="messages-wrap" id="messagesWrap">
+    <div class="messages-inner" id="messages">
+      <!-- Welcome Screen -->
+      <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-logo">🛍️</div>
+        <div class="welcome-title">您好，我是 HiGo 购物助手</div>
+        <div class="welcome-sub">粘贴任意淘宝、京东商品链接，我会帮您一键转化、比价、下单，并安排集运直送到您家门口</div>
+
+        <div class="welcome-cards">
+          <div class="welcome-card" onclick="quickAction('link')">
+            <div class="welcome-card-icon">🔗</div>
+            <div class="welcome-card-content">
+              <div class="welcome-card-title">粘贴商品链接</div>
+              <div class="welcome-card-desc">支持淘宝、天猫、京东、拼多多链接一键解析</div>
+            </div>
+          </div>
+          <div class="welcome-card" onclick="quickAction('orders')">
+            <div class="welcome-card-icon">📦</div>
+            <div class="welcome-card-content">
+              <div class="welcome-card-title">查询我的订单</div>
+              <div class="welcome-card-desc">实时追踪订单状态与集运进度</div>
+            </div>
+          </div>
+          <div class="welcome-card" onclick="quickAction('wishlist')">
+            <div class="welcome-card-icon">❤️</div>
+            <div class="welcome-card-content">
+              <div class="welcome-card-title">查看心愿单</div>
+              <div class="welcome-card-desc">已收藏 3 件商品，等待您下单</div>
+            </div>
+          </div>
+          <div class="welcome-card" onclick="quickAction('recommend')">
+            <div class="welcome-card-icon">🌟</div>
+            <div class="welcome-card-content">
+              <div class="welcome-card-title">社区好物推荐</div>
+              <div class="welcome-card-desc">新加坡华人社区本周热购榜单</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="welcome-tips">
+          <span>💡</span>
+          <span>支持直接发送淘宝口令，例如：¥AbCd1234¥</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-area">
+    <div class="input-inner">
+      <div class="input-chips" id="inputChips">
+        <div class="chip" onclick="sendQuickMsg('查看我的订单')">📦 查看订单</div>
+        <div class="chip" onclick="sendQuickMsg('推荐热门好物')">⭐ 好物推荐</div>
+        <div class="chip" onclick="sendQuickMsg('计算运费')">✈️ 计算运费</div>
+        <div class="chip" onclick="sendQuickMsg('https://item.taobao.com/item.htm?id=demo_nike_af1')">🔗 示例链接</div>
+      </div>
+      <div class="input-box">
+        <textarea
+          class="input-field"
+          id="inputField"
+          placeholder="粘贴淘宝/京东链接，或输入您的问题…"
+          rows="1"
+          onkeydown="handleKeyDown(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <div class="input-actions">
+          <button class="input-icon-btn" title="上传图片" onclick="showToast('图片搜索功能即将上线 🎉')">📷</button>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+      <div class="input-hint">AI 生成内容仅供参考，下单前请核实商品信息 · 区域集运每周统一发货</div>
+    </div>
+  </div>
+</main>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1A1625;color:white;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;"></div>
+
+<script>
+// ===== STATE =====
+let conversationState = 'idle';
+let pendingProduct = null;
+let wishlist = [
+  { id: 'w1', name: '李宁运动鞋 飞电3系列', price: 'S$ 72', emoji: '👟', original: '¥ 369' },
+  { id: 'w2', name: '小米Redmi Note 14 Pro 手机', price: 'S$ 248', emoji: '📱', original: '¥ 1,249' },
+  { id: 'w3', name: 'Lululemon Align 瑜伽裤 高腰版', price: 'S$ 88', emoji: '🩳', original: '¥ 448' }
+];
+
+const PRODUCTS = {
+  taobao_nike: {
+    name: 'Nike Air Force 1 \'07 运动鞋 白色 经典款',
+    emoji: '👟',
+    source: '淘宝',
+    originalPrice: '¥ 499',
+    price: 89.50,
+    shipping: 12.80,
+    currency: 'S$',
+    rating: '4.9',
+    sales: '12,847',
+    weight: '0.8kg',
+    stock: '有货'
+  },
+  jd_dyson: {
+    name: 'Dyson V12 Detect Slim 无绳吸尘器 紫色',
+    emoji: '🔌',
+    source: '京东自营',
+    originalPrice: '¥ 3,799',
+    price: 749.00,
+    shipping: 45.00,
+    currency: 'S$',
+    rating: '4.8',
+    sales: '3,201',
+    weight: '2.2kg',
+    stock: '有货'
+  },
+  taobao_bag: {
+    name: 'Longchamp Le Pliage 折叠手提包 黑色 M号',
+    emoji: '👜',
+    source: '天猫旗舰店',
+    originalPrice: '¥ 780',
+    price: 138.00,
+    shipping: 14.50,
+    currency: 'S$',
+    rating: '4.7',
+    sales: '5,632',
+    weight: '0.5kg',
+    stock: '有货'
+  }
+};
+
+// ===== HELPERS =====
+function getTime() {
+  const now = new Date();
+  return now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2500);
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function hideWelcome() {
+  const ws = document.getElementById('welcomeScreen');
+  if (ws) ws.remove();
+  document.getElementById('inputChips').style.display = 'none';
+}
+
+function scrollToBottom() {
+  const wrap = document.getElementById('messagesWrap');
+  setTimeout(() => wrap.scrollTop = wrap.scrollHeight, 50);
+}
+
+// ===== RENDER FUNCTIONS =====
+function renderUserMsg(text) {
+  hideWelcome();
+  const msgs = document.getElementById('messages');
+  const group = document.createElement('div');
+  group.className = 'msg-group user';
+  group.innerHTML = `
+    <div class="msg-meta" style="justify-content:flex-end">
+      <span class="msg-time">${getTime()}</span>
+      <span class="msg-sender-name">您</span>
+    </div>
+    <div class="msg-bubble">${text.replace(/\n/g,'<br>').replace(/https?:\/\/[^\s]+/g, url => `<span style="text-decoration:underline;opacity:0.8">${url}</span>`)}</div>
+  `;
+  msgs.appendChild(group);
+  scrollToBottom();
+}
+
+function renderTyping() {
+  const msgs = document.getElementById('messages');
+  const group = document.createElement('div');
+  group.className = 'msg-group ai';
+  group.id = 'typingGroup';
+  group.innerHTML = `
+    <div class="msg-meta">
+      <div class="ai-avatar">🤖</div>
+      <span class="msg-sender-name">HiGo 助手</span>
+    </div>
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+  msgs.appendChild(group);
+  scrollToBottom();
+  return group;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingGroup');
+  if (el) el.remove();
+}
+
+function renderAIMsg(html, withFeedback = true) {
+  removeTyping();
+  const msgs = document.getElementById('messages');
+  const group = document.createElement('div');
+  group.className = 'msg-group ai';
+  group.innerHTML = `
+    <div class="msg-meta">
+      <div class="ai-avatar">🤖</div>
+      <span class="msg-sender-name">HiGo 助手</span>
+      <span class="msg-time">${getTime()}</span>
+    </div>
+    <div class="msg-bubble">${html}</div>
+    ${withFeedback ? `
+    <div class="msg-feedback">
+      <button class="feedback-btn" onclick="showToast('感谢反馈 👍')" title="有帮助">👍</button>
+      <button class="feedback-btn" onclick="showToast('已记录，我们会改进 🙏')" title="没帮助">👎</button>
+    </div>` : ''}
+  `;
+  msgs.appendChild(group);
+  scrollToBottom();
+}
+
+function renderAICard(cardHTML) {
+  removeTyping();
+  const msgs = document.getElementById('messages');
+  const group = document.createElement('div');
+  group.className = 'msg-group ai';
+  group.innerHTML = `
+    <div class="msg-meta">
+      <div class="ai-avatar">🤖</div>
+      <span class="msg-sender-name">HiGo 助手</span>
+      <span class="msg-time">${getTime()}</span>
+    </div>
+    <div class="msg-card-wrap">${cardHTML}</div>
+    <div class="msg-feedback">
+      <button class="feedback-btn" onclick="showToast('感谢反馈 👍')">👍</button>
+      <button class="feedback-btn" onclick="showToast('已记录，我们会改进 🙏')">👎</button>
+    </div>
+  `;
+  msgs.appendChild(group);
+  scrollToBottom();
+}
+
+// ===== FLYLINK PROCESSING =====
+function renderFlylinkCard(product) {
+  return `
+    <div class="flylink-card">
+      <div class="flylink-header">
+        <span class="flylink-badge">Flylink</span>
+        <span class="flylink-title">正在解析商品链接…</span>
+      </div>
+      <div class="flylink-progress">
+        <div class="flylink-progress-bar" id="flylinkBar"></div>
+      </div>
+      <div class="flylink-steps">
+        <div class="flylink-step done" id="fstep1"><span class="flylink-step-icon">✅</span> 识别商品来源：${product.source}</div>
+        <div class="flylink-step loading" id="fstep2"><span class="flylink-step-icon">⏳</span> 抓取商品数据（名称/价格/库存）</div>
+        <div class="flylink-step" id="fstep3"><span class="flylink-step-icon">◯</span> 多语言资产生成（EN / ZH / MS）</div>
+        <div class="flylink-step" id="fstep4"><span class="flylink-step-icon">◯</span> AI 商品质检核验</div>
+        <div class="flylink-step" id="fstep5"><span class="flylink-step-icon">◯</span> 创建可支付商品资产</div>
+      </div>
+    </div>`;
+}
+
+function renderProductCard(product) {
+  return `
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <div class="product-emoji-bg">${product.emoji}</div>
+        <span class="product-source-badge">${product.source}</span>
+        <span class="product-verified-badge">✅ AI 核验通过</span>
+      </div>
+      <div class="product-body">
+        <div class="product-name">${product.name}</div>
+        <div class="product-price-row">
+          <span class="product-price-currency">${product.currency}</span>
+          <span class="product-price-main">${product.price.toFixed(2)}</span>
+          <span class="product-price-original">原价 ${product.originalPrice}</span>
+        </div>
+        <div class="product-meta-row">
+          <span class="product-meta-item">⭐ ${product.rating} 好评</span>
+          <span class="product-meta-item">🛒 已售 ${product.sales}</span>
+          <span class="product-meta-item">📦 ${product.weight}</span>
+          <span class="product-meta-item" style="color:var(--success)">✓ ${product.stock}</span>
+        </div>
+        <div class="product-shipping-box">
+          <div class="product-shipping-row">
+            <span class="product-shipping-label">商品货款</span>
+            <span class="product-shipping-value">${product.currency} ${product.price.toFixed(2)}</span>
+          </div>
+          <div class="product-shipping-row">
+            <span class="product-shipping-label">区域集运费 <span style="font-size:10px;color:var(--brand)">(已享批量优惠)</span></span>
+            <span class="product-shipping-value">${product.currency} ${product.shipping.toFixed(2)}</span>
+          </div>
+          <div class="product-shipping-row" style="border-top:1px solid var(--border);padding-top:6px;margin-top:4px">
+            <span class="product-shipping-label" style="font-weight:700;color:var(--text)">合计支付</span>
+            <span class="product-shipping-total">${product.currency} ${(product.price + product.shipping).toFixed(2)}</span>
+          </div>
+        </div>
+        <div class="product-actions">
+          <button class="btn btn-primary" onclick="startPurchase()">🛒 立即购买</button>
+          <button class="btn btn-outline" onclick="addToWishlist()" title="加入心愿单">❤️</button>
+          <button class="btn btn-outline" onclick="shareProduct()" title="分享给朋友">📤</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderOrderCard() {
+  return `
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <!-- Order 1 -->
+      <div class="order-card">
+        <div class="order-header">
+          <div class="order-id">订单号：<span>HG2607120001</span></div>
+          <span class="order-status-badge status-collecting">集货中</span>
+        </div>
+        <div class="order-body">
+          <div class="order-timeline">
+            <div class="timeline-step">
+              <div class="timeline-dot done"></div>
+              <div class="timeline-label done">✓ 已下单 / 买手接单</div>
+              <div class="timeline-time">2026-07-08 14:22</div>
+            </div>
+            <div class="timeline-step">
+              <div class="timeline-dot current"></div>
+              <div class="timeline-label current">◉ 国内集货中（新加坡区域集运仓）</div>
+              <div class="timeline-time">预计 2026-07-14 集齐</div>
+            </div>
+            <div class="timeline-step">
+              <div class="timeline-dot"></div>
+              <div class="timeline-label">◯ 集运发货（每周一统一发出）</div>
+              <div class="timeline-time">预计 2026-07-15</div>
+            </div>
+            <div class="timeline-step">
+              <div class="timeline-dot"></div>
+              <div class="timeline-label">◯ 海外末端配送</div>
+              <div class="timeline-time">预计 2026-07-22 ～ 07-25</div>
+            </div>
+          </div>
+          <div class="order-items-row">
+            <div class="wishlist-item-img">👟</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">Nike Air Force 1 白色 × 1</div>
+              <div style="font-size:11px;color:var(--text-muted)">货款 S$89.50 + 集运 S$12.80</div>
+            </div>
+            <div style="margin-left:auto;text-align:right">
+              <div style="font-size:13px;font-weight:700;color:var(--accent)">S$ 102.30</div>
+              <div style="font-size:10px;color:var(--success)">✓ 已支付</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order 2 -->
+      <div class="order-card">
+        <div class="order-header">
+          <div class="order-id">订单号：<span>HG2606280002</span></div>
+          <span class="order-status-badge status-transit">运输中</span>
+        </div>
+        <div class="order-body">
+          <div class="order-timeline">
+            <div class="timeline-step">
+              <div class="timeline-dot done"></div>
+              <div class="timeline-label done">✓ 已下单</div>
+              <div class="timeline-time">2026-06-28</div>
+            </div>
+            <div class="timeline-step">
+              <div class="timeline-dot done"></div>
+              <div class="timeline-label done">✓ 集运已发货</div>
+              <div class="timeline-time">2026-07-07 集运批次 SG-2407</div>
+            </div>
+            <div class="timeline-step">
+              <div class="timeline-dot current"></div>
+              <div class="timeline-label current">◉ 已到新加坡仓库，等待末端派送</div>
+              <div class="timeline-time">2026-07-12 06:48 抵达 SG-SORT</div>
+            </div>
+            <div class="timeline-step">
+              <div class="timeline-dot"></div>
+              <div class="timeline-label">◯ 快递员上门配送</div>
+              <div class="timeline-time">预计今日 ～ 明日</div>
+            </div>
+          </div>
+          <div class="order-items-row">
+            <div class="wishlist-item-img">🔌</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">Dyson V12 Detect Slim × 1</div>
+              <div style="font-size:11px;color:var(--text-muted)">货款 S$749.00 + 集运 S$45.00</div>
+            </div>
+            <div style="margin-left:auto;text-align:right">
+              <div style="font-size:13px;font-weight:700;color:var(--accent)">S$ 794.00</div>
+              <div style="font-size:10px;color:var(--success)">✓ 已支付</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderWishlistCard() {
+  const items = wishlist.map(item => `
+    <div class="wishlist-item">
+      <div class="wishlist-item-img">${item.emoji}</div>
+      <div class="wishlist-item-info">
+        <div class="wishlist-item-name">${item.name}</div>
+        <div class="wishlist-item-price">${item.price} <span style="font-size:11px;color:var(--text-muted);font-weight:400;text-decoration:line-through">${item.original}</span></div>
+      </div>
+      <div class="wishlist-item-actions">
+        <button class="wishlist-action-btn wishlist-action-buy" onclick="buyWishlistItem('${item.id}')">购买</button>
+        <button class="wishlist-action-btn wishlist-action-remove" onclick="removeWishlistItem('${item.id}')">移除</button>
+      </div>
+    </div>
+  `).join('');
+  return `
+    <div class="wishlist-card">
+      <div class="wishlist-header">
+        <div class="wishlist-title">❤️ 我的心愿单</div>
+        <div class="wishlist-count">${wishlist.length} 件商品</div>
+      </div>
+      ${items}
+      <div style="padding:12px 16px;">
+        <button class="btn btn-primary" style="width:100%" onclick="showToast('已生成集采购单，买手将为您统一采购 ✨')">📋 一键全部下单</button>
+      </div>
+    </div>`;
+}
+
+function renderRecommendCard() {
+  const items = [
+    { emoji: '👟', name: '安踏 C37+ 跑步鞋 轻量版', price: 'S$ 65', original: '¥ 329', hot: '483人购买' },
+    { emoji: '🎧', name: 'Sony WH-1000XM5 降噪耳机', price: 'S$ 315', original: '¥ 1,599', hot: '本周新加坡热购' },
+    { emoji: '💄', name: '花西子 新彝族印象口红 定制版', price: 'S$ 28', original: '¥ 139', hot: '社区推荐' },
+    { emoji: '🍵', name: '小罐茶 大师作 龙井 50g 礼盒', price: 'S$ 45', original: '¥ 228', hot: '送礼首选' },
+  ];
+  const cards = items.map(item => `
+    <div class="reco-card" onclick="buyRecoItem('${item.name}', '${item.price}')">
+      <div class="reco-img">${item.emoji}</div>
+      <div class="reco-body">
+        <div class="reco-name">${item.name}</div>
+        <div class="reco-price">${item.price} <span class="reco-original">${item.original}</span></div>
+        <div class="reco-hot">🔥 ${item.hot}</div>
+      </div>
+    </div>
+  `).join('');
+  return `
+    <div class="community-section">
+      <div class="community-header">
+        <div class="community-title">🌟 新加坡社区热购榜</div>
+        <span class="see-all-link">查看全部 →</span>
+      </div>
+      <div class="community-body">
+        <div class="reco-grid">${cards}</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text-muted);text-align:center">
+          🇸🇬 以上来自新加坡华人社区本周真实购买数据 · 点击商品直接下单
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderShippingCard() {
+  return `
+    <div class="shipping-card">
+      <div class="shipping-header">
+        <div class="shipping-title">✈️ 区域集运费率（新加坡 · 本周有效）</div>
+      </div>
+      <div class="shipping-body">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;padding:8px;background:var(--brand-light);border-radius:8px;">
+          💡 <strong>区域智能集运：</strong>平台按周将新加坡所有用户订单集中批量发货，单件商品即可享受批量运价
+        </div>
+        <div class="shipping-region-grid">
+          <div class="region-item">
+            <div class="region-name">🟢 普通商品</div>
+            <div class="region-price">S$ 8 – 15 / kg</div>
+            <div class="region-time">约 7–12 个工作日</div>
+          </div>
+          <div class="region-item">
+            <div class="region-name">🔵 大件商品</div>
+            <div class="region-price">S$ 5 – 9 / kg</div>
+            <div class="region-time">约 10–15 个工作日</div>
+          </div>
+          <div class="region-item">
+            <div class="region-name">🟡 精品/易碎</div>
+            <div class="region-price">S$ 12 – 20 / kg</div>
+            <div class="region-time">含防护包装</div>
+          </div>
+          <div class="region-item">
+            <div class="region-name">🔴 不可邮品</div>
+            <div class="region-price">— 不可寄送</div>
+            <div class="region-time">液体/食品/药品等</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text-muted)">
+          📅 每周一统一发货，下单截止前一周日 23:59 · 时效仅供参考，以实际为准
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderPaymentCard(product) {
+  const total = product.price + product.shipping;
+  return `
+    <div class="payment-card">
+      <div class="payment-header">
+        <div class="payment-amount">${product.currency} ${total.toFixed(2)}</div>
+        <div class="payment-desc">${product.name.substring(0,30)}…</div>
+      </div>
+      <div class="payment-breakdown">
+        <div class="payment-row">
+          <span class="payment-row-label">商品货款</span>
+          <span class="payment-row-value">${product.currency} ${product.price.toFixed(2)}</span>
+        </div>
+        <div class="payment-row">
+          <span class="payment-row-label">区域集运费</span>
+          <span class="payment-row-value">${product.currency} ${product.shipping.toFixed(2)}</span>
+        </div>
+        <div class="payment-row">
+          <span class="payment-row-label" style="color:var(--success);font-size:11px">✓ 已匹配新加坡 Buona Vista 集货点</span>
+          <span style="font-size:11px;color:var(--text-muted)">下周一集运发货</span>
+        </div>
+        <div class="payment-divider"></div>
+        <div class="payment-row payment-row-total">
+          <span class="payment-row-label">合计支付</span>
+          <span class="payment-row-value">${product.currency} ${total.toFixed(2)}</span>
+        </div>
+      </div>
+      <div style="padding:0 16px 8px;font-size:12px;color:var(--text-muted)">选择支付方式</div>
+      <div class="payment-methods">
+        <div class="payment-method selected" onclick="selectPayMethod(this)">
+          <span class="payment-method-icon">🏦</span>PayNow
+        </div>
+        <div class="payment-method" onclick="selectPayMethod(this)">
+          <span class="payment-method-icon">💳</span>信用卡
+        </div>
+        <div class="payment-method" onclick="selectPayMethod(this)">
+          <span class="payment-method-icon">🔵</span>PayPal
+        </div>
+      </div>
+      <div class="payment-actions">
+        <button class="btn btn-accent" style="width:100%" onclick="confirmPayment()">
+          🔒 确认支付 ${product.currency} ${total.toFixed(2)}
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderSuccessCard(orderNo) {
+  return `
+    <div class="success-card">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">支付成功！订单已创建</div>
+      <div class="success-desc">
+        买手将于今日内开始采购，商品将在下周一（7月15日）随新加坡区域集运批次统一发货，预计 7月22–25日送达您家门口
+      </div>
+      <div class="success-order-id">订单号：HG2607130003</div>
+      <button class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:8px" onclick="trackNewOrder()">
+        📦 追踪订单
+      </button>
+      <button class="btn" style="width:100%;justify-content:center;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border)" onclick="shareOrder()">
+        💬 分享到社区晒单
+      </button>
+    </div>`;
+}
+
+// ===== INTERACTION HANDLERS =====
+function selectPayMethod(el) {
+  document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function confirmPayment() {
+  conversationState = 'idle';
+  pendingProduct = null;
+  renderTyping();
+  setTimeout(() => {
+    renderAICard(renderSuccessCard('HG2607130003'));
+    renderAIMsg('<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>每周一统一发货，本次将于 <strong>7月15日</strong> 随新加坡批次发出</p><p>🔔 <strong>通知方式：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>💬 <strong>有问题吗？</strong>直接告诉我就好！</p>', true);
+  }, 1200);
+}
+
+function addToWishlist() {
+  if (pendingProduct) {
+    wishlist.unshift({ id: 'w_new', name: pendingProduct.name, price: pendingProduct.currency + ' ' + pendingProduct.price.toFixed(2), emoji: pendingProduct.emoji, original: pendingProduct.originalPrice });
+    document.querySelector('.sidebar-badge')?.textContent && (document.querySelector('.sidebar-badge').textContent = wishlist.length);
+  }
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg('❤️ 已加入心愿单！商品将保存在您的心愿单中，有需要随时下单。<br><br>目前您的心愿单共有 <strong>' + wishlist.length + '</strong> 件商品，总价约 <strong>S$ 408</strong>。');
+    showToast('已加入心愿单 ❤️');
+  }, 600);
+}
+
+function shareProduct() {
+  showToast('已生成分享链接，可发送给朋友 📤');
+  setTimeout(() => {
+    renderAIMsg('🔗 商品分享链接已生成！您可以将链接发送给朋友，他们点击后可直接在 HiGoBuy 下单。<br><br>如果朋友通过您的链接成功下单，您将获得 <strong>S$ 2</strong> 的社区返佣哦～');
+  }, 800);
+}
+
+const ADDRESS_OPTIONS = [
+  {
+    id: 'addr1',
+    tag: '您的常用地址', tagStyle: 'tag-brand',
+    icon: '🏠',
+    name: '林晓雯',
+    detail: '123 Commonwealth Ave #08-12, Buona Vista, S\'pore 140123',
+    reason: '📦 与本周 18 件订单同批次集运 · 运费最优'
+  },
+  {
+    id: 'addr2',
+    tag: '本周货量最大', tagStyle: 'tag-success',
+    icon: '👨‍👩‍👧',
+    name: '陈志明（家人）',
+    detail: '221 Jurong East St 13 #12-56, Jurong East, S\'pore 600221',
+    reason: '🔥 本批次货量最大 · 47 件 · 单件集运费最低'
+  },
+  {
+    id: 'addr3',
+    tag: '本周货值最高', tagStyle: 'tag-warning',
+    icon: '👤',
+    name: '林美华（朋友）',
+    detail: '456 Tampines St 42 #03-08, Tampines, S\'pore 520456',
+    reason: '💎 本批次货值最高 S$ 3,240 · 享优先配送保障'
+  }
+];
+
+function renderAddressCard() {
+  const items = ADDRESS_OPTIONS.map(addr => `
+    <div class="address-rec-item" id="${addr.id}" onclick="selectAddress('${addr.id}')">
+      <div class="address-rec-icon">${addr.icon}</div>
+      <div class="address-rec-content">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
+          <span class="address-rec-name">${addr.name}</span>
+          <span class="tag ${addr.tagStyle}">${addr.tag}</span>
+        </div>
+        <div class="address-rec-detail">${addr.detail}</div>
+        <div class="address-rec-reason">${addr.reason}</div>
+      </div>
+      <div class="address-check">✓</div>
+    </div>`).join('');
+  return `
+    <div class="address-rec-card">
+      <div class="address-rec-header">
+        📍 智能推荐收货地址
+        <span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:auto">基于本周实时集运数据</span>
+      </div>
+      ${items}
+      <div style="padding:9px 16px;font-size:11px;color:var(--text-muted);background:var(--surface-2);display:flex;align-items:center;gap:5px">
+        🔄 数据每小时更新 · 点击选择收货地址
+      </div>
+    </div>`;
+}
+
+function selectAddress(addrId) {
+  const addr = ADDRESS_OPTIONS.find(a => a.id === addrId);
+  if (!addr || conversationState !== 'confirm_address') return;
+  document.querySelectorAll('.address-rec-item').forEach(el => el.classList.remove('selected'));
+  const item = document.getElementById(addrId);
+  if (item) item.classList.add('selected');
+  setTimeout(() => {
+    renderUserMsg(`✓ 选择此地址：${addr.name}\n${addr.detail}`);
+    conversationState = 'payment';
+    renderTyping();
+    setTimeout(() => {
+      if (pendingProduct) renderAICard(renderPaymentCard(pendingProduct));
+    }, 1000);
+  }, 700);
+}
+
+function startPurchase() {
+  if (!pendingProduct) return;
+  conversationState = 'confirm_address';
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg(`<p>好的！准备为您下单 <strong>${pendingProduct.name}</strong></p><p>📍 根据本周实时集运数据，为您推荐以下收货地址，请选择：</p>`);
+    setTimeout(() => renderAICard(renderAddressCard()), 300);
+  }, 800);
+}
+
+function addToWishlist() {
+  renderTyping();
+  const count = wishlist.length + 1;
+  setTimeout(() => {
+    renderAIMsg(`❤️ 已加入心愿单！当前心愿单共 <strong>${count}</strong> 件商品。<br><br>想要一次性下单全部心愿单商品？告诉我"查看心愿单"即可。`);
+    showToast('已加入心愿单 ❤️');
+  }, 600);
+}
+
+function buyWishlistItem(id) {
+  const item = wishlist.find(w => w.id === id);
+  if (!item) return;
+  showToast(`正在为您处理 ${item.name} 的购买…`);
+  renderUserMsg(`购买心愿单商品：${item.name}`);
+  conversationState = 'idle';
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg(`好的！正在为您创建 <strong>${item.name}</strong> 的订单，货款 <strong>${item.price}</strong>，集运费预估 <strong>S$ 12</strong>。<br><br>请确认收货地址：<strong>新加坡 Buona Vista · 123 Commonwealth Ave #08-12</strong>`);
+    document.getElementById('inputField').placeholder = '确认地址后继续…';
+  }, 1000);
+}
+
+function removeWishlistItem(id) {
+  wishlist = wishlist.filter(w => w.id !== id);
+  showToast('已从心愿单移除');
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg(`已从心愿单移除该商品。当前心愿单剩余 <strong>${wishlist.length}</strong> 件商品。`);
+  }, 600);
+}
+
+function buyRecoItem(name, price) {
+  renderUserMsg(`我想买这个：${name}`);
+  conversationState = 'idle';
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg(`很好的选择！<strong>${name}</strong> 在新加坡社区非常受欢迎。<br><br>请将商品的淘宝/京东链接发给我，我来帮您通过 Flylink 转化并下单。<br><br>如果没有链接，也可以直接说"帮我找这款商品"，我来协助搜索 😊`);
+  }, 900);
+}
+
+function trackNewOrder() {
+  renderUserMsg('查看我最新的订单');
+  processInput('查看我最新的订单');
+}
+
+function shareOrder() {
+  showToast('已生成晒单卡片，分享到社区群 🎉');
+}
+
+// ===== MAIN MESSAGE FLOW =====
+function sendQuickMsg(text) {
+  document.getElementById('inputField').value = text;
+  sendMessage();
+}
+
+function sendMessage() {
+  const field = document.getElementById('inputField');
+  const text = field.value.trim();
+  if (!text) return;
+  field.value = '';
+  field.style.height = 'auto';
+  renderUserMsg(text);
+  processInput(text);
+}
+
+function processInput(text) {
+  const lower = text.toLowerCase();
+
+  // Handle address confirmation
+  if (conversationState === 'confirm_address' && (lower.includes('确认') || lower.includes('好') || lower.includes('ok') || lower.includes('是') || lower.includes('用这个') || lower.includes('这个地址'))) {
+    conversationState = 'payment';
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg('<p>✅ 地址已确认！为您生成订单…</p>');
+      setTimeout(() => {
+        if (pendingProduct) renderAICard(renderPaymentCard(pendingProduct));
+      }, 400);
+    }, 700);
+    return;
+  }
+
+  // Detect product links
+  if (lower.includes('taobao.com') || lower.includes('tb.cn') || lower.includes('t.cn') || lower.includes('tmall') || lower.includes('淘宝') || lower.includes('天猫') || lower.includes('¥') || lower.includes('item.taobao') || lower.includes('demo_nike') || lower.includes('demo_bag')) {
+    let product;
+    if (lower.includes('bag') || lower.includes('包') || lower.includes('longchamp')) {
+      product = PRODUCTS.taobao_bag;
+    } else {
+      product = PRODUCTS.taobao_nike;
+    }
+    pendingProduct = product;
+    conversationState = 'product_found';
+    handleProductLink(product);
+    return;
+  }
+
+  if (lower.includes('jd.com') || lower.includes('京东') || lower.includes('j.cn') || lower.includes('dyson') || lower.includes('demo_jd')) {
+    pendingProduct = PRODUCTS.jd_dyson;
+    conversationState = 'product_found';
+    handleProductLink(PRODUCTS.jd_dyson);
+    return;
+  }
+
+  // Order tracking
+  if (lower.includes('订单') || lower.includes('物流') || lower.includes('快递') || lower.includes('到哪') || lower.includes('order') || lower.includes('track') || lower.includes('包裹') || lower.includes('发货') || lower.includes('运输')) {
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg('📦 为您查询最近的订单状态…');
+      setTimeout(() => renderAICard(renderOrderCard()), 600);
+    }, 800);
+    return;
+  }
+
+  // Wishlist
+  if (lower.includes('心愿') || lower.includes('收藏') || lower.includes('wishlist') || lower.includes('我的商品')) {
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg(`❤️ 您的心愿单里共有 <strong>${wishlist.length}</strong> 件商品：`);
+      setTimeout(() => renderAICard(renderWishlistCard()), 400);
+    }, 700);
+    return;
+  }
+
+  // Recommendations
+  if (lower.includes('推荐') || lower.includes('热门') || lower.includes('好物') || lower.includes('trending') || lower.includes('popular') || lower.includes('什么值得买') || lower.includes('榜单')) {
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg('🌟 根据新加坡华人社区本周购买数据，为您整理了热门好物榜单：');
+      setTimeout(() => renderAICard(renderRecommendCard()), 400);
+    }, 900);
+    return;
+  }
+
+  // Shipping calculator
+  if (lower.includes('运费') || lower.includes('shipping') || lower.includes('怎么算') || lower.includes('集运') || lower.includes('费用') || lower.includes('多少钱') || lower.includes('价格')) {
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg('✈️ 海卖购采用区域智能集运，相比传统单件邮寄可节省 30–50% 运费：');
+      setTimeout(() => renderAICard(renderShippingCard()), 400);
+    }, 800);
+    return;
+  }
+
+  // Buyer guide
+  if (lower.includes('怎么') || lower.includes('如何') || lower.includes('教') || lower.includes('指南') || lower.includes('流程') || lower.includes('步骤') || lower.includes('购物') || lower.includes('guide') || lower.includes('how')) {
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg(`<p>📖 <strong>HiGoBuy 购物流程超简单，4步搞定：</strong></p>
+<p><strong>① 发链接</strong> — 把淘宝/京东/天猫商品链接发给我</p>
+<p><strong>② 确认下单</strong> — 我通过 Flylink 解析商品，显示新加坡价格（含集运），您确认即可</p>
+<p><strong>③ 支付</strong> — 支持 PayNow / 信用卡 / PayPal，货款归买手，运费归平台分开结算</p>
+<p><strong>④ 坐等收货</strong> — 每周一统一集运发货，约7–12天到您家门口，全程物流通知</p>
+<p style="margin-top:4px">试试发一个商品链接给我吧！🔗</p>`);
+    }, 900);
+    return;
+  }
+
+  // Greeting
+  if (lower.includes('你好') || lower.includes('hello') || lower.match(/^hi\b/) || lower.includes('嗨') || lower.includes('早') || lower.includes('在吗')) {
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg(`<p>👋 您好，林晓雯！我是 HiGo 助手，随时为您服务～</p><p>您可以：<br>🔗 粘贴淘宝/京东链接直接下单<br>📦 查询 2 个进行中的订单<br>❤️ 查看 ${wishlist.length} 件心愿单商品<br>⭐ 看看新加坡社区好物推荐</p><p>今天想买什么？</p>`);
+    }, 600);
+    return;
+  }
+
+  // Default
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg(`<p>我来帮您处理！不过我需要更多信息才能更好地协助您。</p><p>您可以：<br>• 发送<strong>淘宝/京东商品链接</strong>直接下单<br>• 问我"<strong>查看订单</strong>"追踪包裹<br>• 说"<strong>推荐好物</strong>"发现热门商品<br>• 问"<strong>运费多少</strong>"查询集运费率</p>`);
+  }, 800);
+}
+
+function handleProductLink(product) {
+  renderTyping();
+  setTimeout(() => {
+    removeTyping();
+    const msgs = document.getElementById('messages');
+    const group = document.createElement('div');
+    group.className = 'msg-group ai';
+    group.innerHTML = `
+      <div class="msg-meta">
+        <div class="ai-avatar">🤖</div>
+        <span class="msg-sender-name">HiGo 助手</span>
+        <span class="msg-time">${getTime()}</span>
+      </div>
+      <div class="msg-card-wrap" id="flylinkGroup">${renderFlylinkCard(product)}</div>
+    `;
+    msgs.appendChild(group);
+    scrollToBottom();
+
+    // Animate Flylink steps
+    const steps = [
+      { el: 'fstep2', delay: 400 },
+      { el: 'fstep3', delay: 900 },
+      { el: 'fstep4', delay: 1400 },
+      { el: 'fstep5', delay: 1900 },
+    ];
+    steps.forEach(({ el, delay }) => {
+      setTimeout(() => {
+        const e = document.getElementById(el);
+        if (e) {
+          e.className = 'flylink-step done';
+          e.querySelector('.flylink-step-icon').textContent = '✅';
+        }
+      }, delay);
+    });
+
+    // After all steps, show product card
+    setTimeout(() => {
+      const wrap = document.getElementById('flylinkGroup');
+      if (wrap) {
+        wrap.innerHTML = renderProductCard(product);
+      }
+      // Add feedback
+      const fdbk = document.createElement('div');
+      fdbk.className = 'msg-feedback';
+      fdbk.innerHTML = `
+        <button class="feedback-btn" onclick="showToast('感谢反馈 👍')">👍</button>
+        <button class="feedback-btn" onclick="showToast('已记录，我们会改进 🙏')">👎</button>
+      `;
+      group.appendChild(fdbk);
+      scrollToBottom();
+
+      // Show text after product
+      setTimeout(() => {
+        renderAIMsg(`<p>✅ Flylink 解析完成！以上是 <strong>${product.source}</strong> 商品的完整信息，已换算为新加坡元。</p><p>🚀 <strong>集运优惠说明：</strong>运费已按区域集运批量价格计算，比单件邮寄节省约 <strong>35%</strong></p><p>点击 <strong>立即购买</strong> 开始下单，或 ❤️ 加入心愿单稍后购买</p>`, true);
+      }, 300);
+    }, 2400);
+  }, 600);
+}
+
+function quickAction(type) {
+  switch(type) {
+    case 'link':
+      hideWelcome();
+      document.getElementById('inputField').focus();
+      document.getElementById('inputField').placeholder = '请粘贴淘宝或京东商品链接…';
+      break;
+    case 'orders':
+      sendQuickMsg('查看我的订单');
+      break;
+    case 'wishlist':
+      sendQuickMsg('查看心愿单');
+      break;
+    case 'recommend':
+      sendQuickMsg('推荐热门好物');
+      break;
+    case 'shipping':
+      sendQuickMsg('计算运费');
+      break;
+    case 'buyerguide':
+      sendQuickMsg('如何购物');
+      break;
+  }
+}
+
+function newChat() {
+  conversationState = 'idle';
+  pendingProduct = null;
+  document.getElementById('messages').innerHTML = `
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-logo">🛍️</div>
+      <div class="welcome-title">您好，我是 HiGo 购物助手</div>
+      <div class="welcome-sub">粘贴任意淘宝、京东商品链接，我会帮您一键转化、比价、下单，并安排集运直送到您家门口</div>
+      <div class="welcome-cards">
+        <div class="welcome-card" onclick="quickAction('link')">
+          <div class="welcome-card-icon">🔗</div>
+          <div class="welcome-card-content">
+            <div class="welcome-card-title">粘贴商品链接</div>
+            <div class="welcome-card-desc">支持淘宝、天猫、京东、拼多多链接一键解析</div>
+          </div>
+        </div>
+        <div class="welcome-card" onclick="quickAction('orders')">
+          <div class="welcome-card-icon">📦</div>
+          <div class="welcome-card-content">
+            <div class="welcome-card-title">查询我的订单</div>
+            <div class="welcome-card-desc">实时追踪订单状态与集运进度</div>
+          </div>
+        </div>
+        <div class="welcome-card" onclick="quickAction('wishlist')">
+          <div class="welcome-card-icon">❤️</div>
+          <div class="welcome-card-content">
+            <div class="welcome-card-title">查看心愿单</div>
+            <div class="welcome-card-desc">已收藏 3 件商品，等待您下单</div>
+          </div>
+        </div>
+        <div class="welcome-card" onclick="quickAction('recommend')">
+          <div class="welcome-card-icon">🌟</div>
+          <div class="welcome-card-content">
+            <div class="welcome-card-title">社区好物推荐</div>
+            <div class="welcome-card-desc">新加坡华人社区本周热购榜单</div>
+          </div>
+        </div>
+      </div>
+      <div class="welcome-tips"><span>💡</span><span>支持直接发送淘宝口令，例如：¥AbCd1234¥</span></div>
+    </div>`;
+  document.getElementById('inputChips').style.display = 'flex';
+  document.getElementById('inputField').placeholder = '粘贴淘宝/京东链接，或输入您的问题…';
+}
+
+// ===== CHAT HISTORY REPLAY =====
+const CHAT_HISTORIES = {
+  chat1: {
+    title: '淘宝 Air Force 1 购买',
+    steps: [
+      { role: 'user', text: '这双 Air Force 1 帮我看看，想买来日常穿\nhttps://item.taobao.com/item.htm?id=712345678901' },
+      { role: 'ai', type: 'product', product: 'taobao_nike' },
+      { role: 'ai', text: '<p>✅ Flylink 解析完成！以上是淘宝商品完整信息，已换算为新加坡元。</p><p>🚀 <strong>集运优惠：</strong>运费已按区域集运批量价格计算，比单件邮寄节省约 <strong>35%</strong></p><p>点击 <strong>立即购买</strong> 开始下单，或加入心愿单稍后购买 😊</p>' },
+      { role: 'user', text: '价格不错！帮我买白色这双，US 8 码' },
+      { role: 'ai', type: 'address_card' },
+      { role: 'ai', type: 'payment', product: 'taobao_nike' },
+      { role: 'user', text: '已用 PayNow 付款了 ✅' },
+      { role: 'ai', type: 'success', orderNo: 'HG2607120001' },
+      { role: 'ai', text: '<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>本次将于 <strong>7月15日（周一）</strong> 随新加坡集运批次统一发出</p><p>🔔 <strong>通知：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>祝您购物愉快！👟✨</p>' },
+    ]
+  },
+  chat2: {
+    title: '戴森吸尘器代购咨询',
+    steps: [
+      { role: 'user', text: '你好，我想买戴森吸尘器，京东上有一款 V12，帮我看看值不值得买？' },
+      { role: 'ai', text: '<p>您好！Dyson V12 是目前戴森无绳系列的旗舰款，口碑非常好 💪</p><p>请把京东商品链接发给我，我来通过 <strong>Flylink</strong> 解析最新价格和库存，帮您换算成新加坡元并计算集运费用。</p>' },
+      { role: 'user', text: '好的，这是链接：\nhttps://item.jd.com/100050267756.html' },
+      { role: 'ai', type: 'product', product: 'jd_dyson' },
+      { role: 'ai', text: '<p>✅ Flylink 解析完成！京东自营正品，AI 核验通过。</p><p>💡 <strong>价格说明：</strong>目前京东价 ¥3,799，换算 <strong>S$ 749</strong>，比新加坡 Dyson 官网（约 S$ 1,099）便宜约 <strong>32%</strong>，非常划算！</p>' },
+      { role: 'user', text: '集运费 S$45 感觉有点贵？这个是怎么算的' },
+      { role: 'ai', text: '<p>理解您的顾虑！来解释一下 👇</p><p>📦 Dyson V12 重约 <strong>2.2kg</strong>，加上防震包装体积重约 5kg，按大件集运价 <strong>S$ 9/kg</strong> 计算 = S$ 45</p><p>🎯 <strong>对比参考：</strong>走 DHL/FedEx 单独寄同等重量约 S$ 80–100。我们区域集运为您节省了 <strong>约 40%</strong></p><p>加上比新加坡官网便宜的 S$ 350，整体性价比非常高！</p>' },
+      { role: 'user', text: '说得有道理！不过我再对比一下，先加入心愿单' },
+      { role: 'ai', text: '<p>❤️ 已加入心愿单！</p><p>📊 <strong>小提醒：</strong>戴森产品价格波动较大，目前是近期低点。价格变动时我会第一时间通知您 🔔</p><p>另外，如果有朋友也在考虑，拼单集运可以进一步摊薄运费～ 有问题随时找我！</p>' },
+    ]
+  }
+};
+
+
+// ===== REPLAY ENGINE =====
+
+function replayDelay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function typeIntoElement(el, htmlContent) {
+  const temp = document.createElement('div');
+  temp.innerHTML = htmlContent;
+  const plain = (temp.textContent || '').trim();
+  if (!plain) { el.innerHTML = htmlContent; return; }
+
+  const cursor = document.createElement('span');
+  cursor.className = 'type-cursor';
+  el.innerHTML = '';
+  el.appendChild(cursor);
+
+  let buf = '';
+  const speed = Math.max(18, 30 - Math.floor(plain.length / 20));
+  for (const ch of plain) {
+    buf += ch;
+    el.textContent = buf;
+    el.appendChild(cursor);
+    const pause = '。！？、…\n，'.includes(ch)
+      ? 90 + Math.random() * 50
+      : speed + Math.random() * 10 - 5;
+    await replayDelay(Math.max(12, pause));
+    scrollToBottom();
+  }
+  el.innerHTML = htmlContent;
+}
+
+async function replayUserTypesInput(text) {
+  const field = document.getElementById('inputField');
+  const sendBtn = document.getElementById('sendBtn');
+  field.value = '';
+  autoResize(field);
+
+  for (const ch of text) {
+    field.value += ch;
+    autoResize(field);
+    const isPunct = '。！？、\n '.includes(ch);
+    await replayDelay(isPunct ? 130 + Math.random() * 60 : 55 + Math.random() * 30);
+  }
+
+  sendBtn.style.background = 'var(--accent)';
+  sendBtn.style.transform = 'scale(1.18)';
+  await replayDelay(320);
+  sendBtn.style.background = '';
+  sendBtn.style.transform = '';
+  field.value = '';
+  autoResize(field);
+}
+
+function appendReplayTyping(container) {
+  const group = document.createElement('div');
+  group.className = 'msg-group ai';
+  group.innerHTML = '<div class="msg-meta"><div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span></div>'
+    + '<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  container.appendChild(group);
+  scrollToBottom();
+  return group;
+}
+
+function appendReplayAICard(container, cardHTML, timeStr) {
+  const group = document.createElement('div');
+  group.className = 'msg-group ai';
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-card-wrap';
+  wrap.innerHTML = cardHTML;
+  const fdbk = document.createElement('div');
+  fdbk.className = 'msg-feedback';
+  fdbk.innerHTML = '<button class="feedback-btn" onclick="showToast(\'感谢反馈 👍\')">&#128077;</button>'
+    + '<button class="feedback-btn" onclick="showToast(\'已记录 🙏\')">&#128078;</button>';
+  group.appendChild(meta);
+  group.appendChild(wrap);
+  group.appendChild(fdbk);
+  container.appendChild(group);
+  scrollToBottom();
+  return group;
+}
+
+async function replayProductFlow(product, container, timeStr) {
+  const uid = Date.now();
+  const group = document.createElement('div');
+  group.className = 'msg-group ai';
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+  group.appendChild(meta);
+
+  const cardWrap = document.createElement('div');
+  cardWrap.className = 'msg-card-wrap';
+  cardWrap.id = 'rfc_' + uid;
+  cardWrap.innerHTML = '<div class="flylink-card">'
+    + '<div class="flylink-header"><span class="flylink-badge">Flylink</span><span class="flylink-title">正在解析商品链接…</span></div>'
+    + '<div class="flylink-progress"><div class="flylink-progress-bar"></div></div>'
+    + '<div class="flylink-steps">'
+    + '<div class="flylink-step done"    id="rfs1_' + uid + '"><span class="flylink-step-icon">✅</span> 识别商品来源：' + product.source + '</div>'
+    + '<div class="flylink-step loading" id="rfs2_' + uid + '"><span class="flylink-step-icon">⏳</span> 抓取商品数据（名称/价格/库存）</div>'
+    + '<div class="flylink-step"         id="rfs3_' + uid + '"><span class="flylink-step-icon">◯</span> 多语言资产生成（EN / ZH / MS）</div>'
+    + '<div class="flylink-step"         id="rfs4_' + uid + '"><span class="flylink-step-icon">◯</span> AI 商品质检核验</div>'
+    + '<div class="flylink-step"         id="rfs5_' + uid + '"><span class="flylink-step-icon">◯</span> 创建可支付商品资产</div>'
+    + '</div></div>';
+  group.appendChild(cardWrap);
+  container.appendChild(group);
+  scrollToBottom();
+
+  for (let i = 2; i <= 5; i++) {
+    await replayDelay(620);
+    const el = document.getElementById('rfs' + i + '_' + uid);
+    if (el) { el.className = 'flylink-step done'; el.querySelector('.flylink-step-icon').textContent = '✅'; }
+  }
+  await replayDelay(450);
+
+  const wrap = document.getElementById('rfc_' + uid);
+  if (wrap) wrap.innerHTML = renderProductCard(product);
+
+  const fdbk = document.createElement('div');
+  fdbk.className = 'msg-feedback';
+  fdbk.innerHTML = '<button class="feedback-btn" onclick="showToast(\'感谢反馈 👍\')">&#128077;</button>'
+    + '<button class="feedback-btn" onclick="showToast(\'已记录 🙏\')">&#128078;</button>';
+  group.appendChild(fdbk);
+  scrollToBottom();
+}
+
+async function replayConversation(chatId) {
+  const chat = CHAT_HISTORIES[chatId];
+  if (!chat) return;
+
+  conversationState = 'idle';
+  pendingProduct = null;
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = '';
+  document.getElementById('inputChips').style.display = 'none';
+  document.getElementById('chatTitle').textContent = chat.title;
+
+  const baseMinutes = chatId === 'chat1' ? 614 : 632;
+  let minuteOffset = 0;
+  function chatTime() {
+    const t = baseMinutes + minuteOffset;
+    return Math.floor(t / 60).toString().padStart(2,'0') + ':' + (t % 60).toString().padStart(2,'0');
+  }
+
+  for (const step of chat.steps) {
+
+    if (step.role === 'user') {
+      const plain = step.text.replace(/\n/g,'');
+      await replayDelay(plain.length < 15 ? 1800 : plain.length < 40 ? 2500 : 3200);
+      await replayUserTypesInput(step.text);
+      await replayDelay(280);
+      minuteOffset += 2;
+      const g = document.createElement('div');
+      g.className = 'msg-group user';
+      g.innerHTML = '<div class="msg-meta" style="justify-content:flex-end"><span class="msg-time">' + chatTime()
+        + '</span><span class="msg-sender-name">您</span></div>'
+        + '<div class="msg-bubble">' + step.text.replace(/\n/g,'<br>') + '</div>';
+      msgs.appendChild(g);
+      scrollToBottom();
+
+    } else if (step.role === 'ai') {
+      minuteOffset += 1;
+      const timeStr = chatTime();
+
+      if (step.type === 'product') {
+        await replayDelay(650);
+        const product = PRODUCTS[step.product];
+        pendingProduct = product;
+        await replayProductFlow(product, msgs, timeStr);
+
+      } else if (step.type === 'address_card') {
+        await replayDelay(700);
+        const tEl = appendReplayTyping(msgs);
+        await replayDelay(550);
+        tEl.remove();
+
+        // Intro text with typewriter
+        const introG = document.createElement('div');
+        introG.className = 'msg-group ai';
+        const introMeta = document.createElement('div');
+        introMeta.className = 'msg-meta';
+        introMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+        const introBubble = document.createElement('div');
+        introBubble.className = 'msg-bubble';
+        introG.appendChild(introMeta);
+        introG.appendChild(introBubble);
+        msgs.appendChild(introG);
+        scrollToBottom();
+
+        const pName = (pendingProduct ? pendingProduct.name : '该商品');
+        await typeIntoElement(introBubble, '<p>好的！准备为您下单 <strong>' + pName + '</strong></p>'
+          + '<p>📍 根据本周实时集运数据，为您推荐以下收货地址，请选择：</p>');
+        await replayDelay(350);
+
+        // Address card
+        conversationState = 'confirm_address';
+        appendReplayAICard(msgs, renderAddressCard(), timeStr);
+        await replayDelay(3200);
+
+        // Auto-select addr1
+        const a1 = document.getElementById('addr1');
+        if (a1) { a1.classList.add('selected'); a1.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+        await replayDelay(1000);
+
+        // User types in input box
+        const addr = ADDRESS_OPTIONS[0];
+        await replayUserTypesInput('选择：' + addr.name + '\n' + addr.detail);
+        await replayDelay(280);
+
+        minuteOffset += 2;
+        const ug = document.createElement('div');
+        ug.className = 'msg-group user';
+        ug.innerHTML = '<div class="msg-meta" style="justify-content:flex-end"><span class="msg-time">' + chatTime()
+          + '</span><span class="msg-sender-name">您</span></div>'
+          + '<div class="msg-bubble">✓ 选择此地址：' + addr.name
+          + '<br><span style="font-size:12px;opacity:0.85">' + addr.detail + '</span></div>';
+        msgs.appendChild(ug);
+        scrollToBottom();
+        conversationState = 'idle';
+
+      } else if (step.type === 'payment') {
+        await replayDelay(650);
+        const tEl = appendReplayTyping(msgs);
+        await replayDelay(900);
+        tEl.remove();
+        appendReplayAICard(msgs, renderPaymentCard(PRODUCTS[step.product]), timeStr);
+
+      } else if (step.type === 'success') {
+        await replayDelay(400);
+        const tEl = appendReplayTyping(msgs);
+        await replayDelay(700);
+        tEl.remove();
+        appendReplayAICard(msgs, renderSuccessCard(step.orderNo || 'HG2607130003'), timeStr);
+
+      } else if (step.text) {
+        await replayDelay(500);
+        const tEl = appendReplayTyping(msgs);
+        await replayDelay(480);
+        tEl.remove();
+
+        const g = document.createElement('div');
+        g.className = 'msg-group ai';
+        const gMeta = document.createElement('div');
+        gMeta.className = 'msg-meta';
+        gMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble';
+        const fdbk = document.createElement('div');
+        fdbk.className = 'msg-feedback';
+        fdbk.style.opacity = '0';
+        fdbk.innerHTML = '<button class="feedback-btn" onclick="showToast(\'感谢反馈 👍\')">&#128077;</button>'
+          + '<button class="feedback-btn" onclick="showToast(\'已记录 🙏\')">&#128078;</button>';
+        g.appendChild(gMeta);
+        g.appendChild(bubble);
+        g.appendChild(fdbk);
+        msgs.appendChild(g);
+        scrollToBottom();
+
+        await typeIntoElement(bubble, step.text);
+        fdbk.style.opacity = '1';
+        scrollToBottom();
+      }
+    }
+  }
+}
+
+function loadChat(id) {
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const historyMap = { 'current': 'chat1', 'chat2': 'chat2' };
+  if (historyMap[id]) {
+    replayConversation(historyMap[id]);
+  } else {
+    showToast('已加载对话记录');
+  }
+}
+
+// Init
+document.getElementById('inputField').addEventListener('input', function() {
+  autoResize(this);
+});
+</script>
+</body>
+</html>
