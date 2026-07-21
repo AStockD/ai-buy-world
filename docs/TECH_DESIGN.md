@@ -405,6 +405,70 @@ AIBuyWorld                    Flylink
 "你好" / "hello"               问候意图                      → (无Tool，直接回复)
 ```
 
+> **可配置化设计**：上方映射表仅作文档参考，实际运行由 `IntentRegistry` 驱动。新增意图只需修改配置文件，无需改动 Agent 核心代码。
+
+```typescript
+// src/agent/intent-registry.ts
+
+interface IntentConfig {
+  id: string;                    // 意图唯一标识
+  patterns: string[];            // 触发关键词 / 正则
+  intent: string;                // 意图名称
+  tool?: string;                 // 绑定的 Tool（无则由状态机/直接回复处理）
+  priority?: number;             // 匹配优先级（数值越小越优先）
+  contextGuard?: string;         // 前置上下文条件（如 "has_product_in_context"）
+}
+
+// 配置来源：数据库 / JSON 文件，支持运行时热更新
+const DEFAULT_INTENTS: IntentConfig[] = [
+  { id: 'url_detect',    patterns: ['taobao.com', 'tmall.com', '口令', '链接'],
+    intent: '商品解析',    tool: 'flylink_parse', priority: 1 },
+  { id: 'sku_select',    patterns: ['我要买这个', '选这个', '白色的'],
+    intent: '规格选择',    tool: 'select_sku', priority: 2,
+    contextGuard: 'has_product_in_context' },
+  { id: 'order_query',   patterns: ['查看我的订单', '包裹到哪了', '物流'],
+    intent: '订单查询',    tool: 'query_orders', priority: 5 },
+  { id: 'wishlist',      patterns: ['心愿单', '加入心愿单', '想买的'],
+    intent: '心愿单管理',  tool: 'manage_wishlist', priority: 5 },
+  { id: 'recommend',     patterns: ['推荐', '大家都在买', '有什么好'],
+    intent: '推荐',        tool: 'get_recommendations', priority: 6 },
+  { id: 'shipping',      patterns: ['运费', '寄到', '邮费'],
+    intent: '运费查询',    tool: 'calculate_shipping', priority: 6 },
+  { id: 'address',       patterns: ['我的地址', '添加地址', '改地址'],
+    intent: '地址管理',    tool: 'manage_address', priority: 5 },
+  { id: 'guide',         patterns: ['怎么买', '购物流程', '如何购买'],
+    intent: '购物指南',    priority: 8 },
+  { id: 'greeting',      patterns: ['你好', 'hello', 'hi'],
+    intent: '问候',        priority: 10 },
+];
+
+class IntentRegistry {
+  private intents: IntentConfig[] = [];
+
+  async load(): Promise<void> {
+    // 优先从数据库加载，失败则回退默认配置
+    try {
+      this.intents = await db.intent_configs.findMany({ orderBy: { priority: 'asc' } });
+    } catch {
+      this.intents = DEFAULT_INTENTS;
+    }
+  }
+
+  match(input: string, context: ConversationContext): IntentConfig | null {
+    return this.intents
+      .filter(i => !i.contextGuard || evaluateGuard(i.contextGuard, context))
+      .find(i => i.patterns.some(p => input.includes(p))) ?? null;
+  }
+
+  // 运营后台调用：新增/修改意图后热更新
+  async reload(): Promise<void> {
+    await this.load();
+  }
+}
+```
+
+**扩展流程**：运营在后台添加新意图 → 写入 `intent_configs` 表 → 调用 `/api/admin/intents/reload` → Agent 立即生效，无需重新部署。
+
 ### 6.4 多轮对话状态机
 
 Agent 内部维护会话状态，驱动多步下单流程：
@@ -578,7 +642,71 @@ Agent 回复包含文本流 + 结构化卡片数据，前端据此渲染：
 | 会话状态机 | Redis | 临时数据，TTL 自动过期 |
 | 推荐、通知 | PostgreSQL 从库 | 可容忍短暂延迟 |
 
-### 7.2 核心表结构（14 张表，完整覆盖 PRD 第 6 章）
+### 7.1.1 数据库 Migration 策略（Prisma Migrate）
+
+Schema 演进通过 Prisma Migrate 管理，确保变更可追溯、可回滚、团队协作无冲突。
+
+**目录结构**：
+
+```
+prisma/
+├── schema.prisma              # 唯一 Schema 源（Single Source of Truth）
+├── migrations/
+│   ├── 20260721120000_init/
+│   │   └── migration.sql
+│   ├── 20260725150000_add_exchange_rate_fields/
+│   │   └── migration.sql
+│   └── ...
+└── seed.ts                    # 种子数据（含默认意图配置）
+```
+
+**开发流程**：
+
+```bash
+# 1. 修改 schema.prisma
+# 2. 生成 migration（自动 diff）
+npx prisma migrate dev --name add_xxx_fields
+
+# 3. 同步到开发数据库 + 生成 Client
+npx prisma migrate deploy
+
+# 4. 重置（仅开发环境）
+npx prisma migrate reset
+```
+
+**生产部署流程**（与 §10.7 deploy.sh 对接）：
+
+```bash
+# deploy.sh 中的迁移步骤
+npx prisma migrate deploy          # 应用所有 pending migration
+npx prisma generate                # 重新生成 Client
+```
+
+**规范**：
+
+| 规则 | 说明 |
+|------|------|
+| 一个 PR 一个 migration | 禁止在单个 migration 中混合多个不相关变更 |
+| 命名语义化 | `add_exchange_rate_fields`，不用 `update_2` |
+| 只加不删 | 废弃字段标记 `@deprecated` 注释，下个版本再移除 |
+| 大表变更需评审 | 加索引/改类型须评估锁表时间，> 10 万行用 `CONCURRENTLY` |
+| 回滚预案 | 每个 migration 配套 `rollback.sql`（手动维护），存入 `prisma/rollbacks/` |
+
+**CI 检查**（GitHub Actions）：
+
+```yaml
+# .github/workflows/db-check.yml
+- name: Validate Prisma Schema
+  run: npx prisma validate
+
+- name: Check for unapplied migrations
+  run: npx prisma migrate status
+
+- name: Generate & type-check Client
+  run: npx prisma generate && npx tsc --noEmit
+```
+
+### 7.2 核心表结构（17 张表，完整覆盖 PRD 第 6 章）
 
 #### 7.2.1 users — 用户表 (PRD 6.7)
 
@@ -968,6 +1096,25 @@ CREATE TABLE address_formats (
 );
 ```
 
+#### 7.2.17 intent_configs — 意图配置表（支持动态扩展）
+
+```sql
+CREATE TABLE intent_configs (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    intent_id       VARCHAR(50) UNIQUE NOT NULL,
+    patterns        JSONB NOT NULL DEFAULT '[]',
+    intent_name     VARCHAR(50) NOT NULL,
+    tool_name       VARCHAR(50),
+    priority        INT NOT NULL DEFAULT 5,
+    context_guard   VARCHAR(100),
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_intent_priority ON intent_configs(priority ASC) WHERE is_active = TRUE;
+```
+
 ### 7.3 PRD 实体覆盖校验
 
 | PRD 章节 | 实体 | 对应表 | 状态 |
@@ -986,6 +1133,7 @@ CREATE TABLE address_formats (
 | 6.12 | ReferralCommission | referral_commissions | ✅ |
 | 6.13 | Notification | notifications | ✅ |
 | 6.15 | AddressFormat | address_formats + user_addresses | ✅ |
+| - | IntentConfig | intent_configs | ✅ (架构扩展) |
 
 ### 7.4 Redis 数据结构设计
 
@@ -1842,6 +1990,83 @@ const RETRY_CONFIG = {
 
 ### 9.10 核心业务服务设计
 
+#### 9.10.0 服务模块化架构
+
+所有业务服务遵循统一接口，通过注册表管理，新增功能只需添加模块 + 注册一行：
+
+```
+src/services/
+├── registry.ts                # ServiceRegistry 注册表
+├── exchange/                  # 汇率服务
+│   ├── ExchangeRateService.ts
+│   └── rate-source.ts         # 数据源适配器
+├── batch/                     # 拼批调度
+│   ├── BatchRecommendService.ts
+│   └── AddressBatchMatcher.ts
+├── discount/                  # 折扣计算
+│   └── DiscountService.ts
+├── order/                     # 订单同步
+│   ├── OrderSyncService.ts
+│   └── status-mapper.ts
+├── notification/              # 通知触发
+│   └── NotificationTriggerService.ts
+├── webhook/                   # Webhook 处理
+│   └── FlylinkWebhookHandler.ts
+└── product/                   # 商品刷新
+    └── ProductRefreshService.ts
+```
+
+```typescript
+// src/services/registry.ts
+
+interface IService {
+  name: string;
+  init(): Promise<void>;
+  destroy(): Promise<void>;
+}
+
+class ServiceRegistry {
+  private services = new Map<string, IService>();
+
+  register(service: IService): void {
+    this.services.set(service.name, service);
+  }
+
+  async initAll(): Promise<void> {
+    for (const svc of this.services.values()) {
+      await svc.init();
+    }
+  }
+
+  async destroyAll(): Promise<void> {
+    for (const svc of [...this.services.values()].reverse()) {
+      await svc.destroy();
+    }
+  }
+
+  get<T extends IService>(name: string): T {
+    const svc = this.services.get(name);
+    if (!svc) throw new Error(`Service "${name}" not registered`);
+    return svc as T;
+  }
+}
+
+export const serviceRegistry = new ServiceRegistry();
+
+// 初始化注册 —— 新增服务只需加一行
+serviceRegistry.register(new ExchangeRateService());
+serviceRegistry.register(new BatchRecommendService());
+serviceRegistry.register(new DiscountService());
+serviceRegistry.register(new OrderSyncService());
+serviceRegistry.register(new NotificationTriggerService());
+serviceRegistry.register(new ProductRefreshService());
+```
+
+**扩展规则**：
+1. 每个服务独立目录，可单独测试
+2. 服务间通过 Registry 互相引用，不直接 import 内部实现
+3. 新增业务能力 = 新建目录 + 实现 `IService` + 注册一行
+
 #### 9.10.1 FlyLink Webhook 接收端点
 
 FlyLink 支付完成后通过 Webhook 通知 AIBuyWorld：
@@ -2558,9 +2783,10 @@ echo ">>> 备份数据库..."
 docker compose exec -T postgres pg_dump -U ${DB_USER} aibuyworld | \
   gzip > ${BACKUP_DIR}/db_$(date +%Y%m%d_%H%M%S).sql.gz
 
-# 3. 数据库迁移
+# 3. 数据库迁移（参见 §7.1.1）
 echo ">>> 数据库迁移..."
-docker compose run --rm web node dist/db/migrate.js
+docker compose run --rm web npx prisma migrate deploy
+docker compose run --rm web npx prisma generate
 
 # 4. 构建新镜像
 echo ">>> 构建镜像..."
