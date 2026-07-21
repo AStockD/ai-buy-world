@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HiGoBuy · 海卖购 — AI购物助手</title>
+  <title>AIBuyWorld — AI购物助手</title>
   <style>
     :root {
       --brand: #7C3AED;
@@ -1718,8 +1718,8 @@
   <div class="sidebar-logo">
     <div class="logo-icon">🛍️</div>
     <div class="logo-text">
-      <div class="logo-name">HiGoBuy</div>
-      <div class="logo-sub">海卖购 · AI购物助手</div>
+      <div class="logo-name">AIBuyWorld</div>
+      <div class="logo-sub">AIBuyWorld · AI购物助手</div>
     </div>
   </div>
 
@@ -1810,7 +1810,7 @@
       <!-- Welcome Screen -->
       <div class="welcome-screen" id="welcomeScreen">
         <div class="welcome-logo">🛍️</div>
-        <div class="welcome-title">您好，我是 HiGo 购物助手</div>
+        <div class="welcome-title">您好，我是 AIBuyWorld 购物助手</div>
         <div class="welcome-sub">粘贴任意淘宝、京东商品链接，我会帮您一键转化、比价、下单，并安排集运直送到您家门口</div>
 
         <div class="welcome-cards">
@@ -2011,7 +2011,7 @@ function renderTyping() {
   group.innerHTML = `
     <div class="msg-meta">
       <div class="ai-avatar">🤖</div>
-      <span class="msg-sender-name">HiGo 助手</span>
+      <span class="msg-sender-name">AIBuyWorld 助手</span>
     </div>
     <div class="typing-bubble">
       <div class="typing-dot"></div>
@@ -2037,7 +2037,7 @@ function renderAIMsg(html, withFeedback = true) {
   group.innerHTML = `
     <div class="msg-meta">
       <div class="ai-avatar">🤖</div>
-      <span class="msg-sender-name">HiGo 助手</span>
+      <span class="msg-sender-name">AIBuyWorld 助手</span>
       <span class="msg-time">${getTime()}</span>
     </div>
     <div class="msg-bubble">${html}</div>
@@ -2059,7 +2059,7 @@ function renderAICard(cardHTML) {
   group.innerHTML = `
     <div class="msg-meta">
       <div class="ai-avatar">🤖</div>
-      <span class="msg-sender-name">HiGo 助手</span>
+      <span class="msg-sender-name">AIBuyWorld 助手</span>
       <span class="msg-time">${getTime()}</span>
     </div>
     <div class="msg-card-wrap">${cardHTML}</div>
@@ -2214,7 +2214,7 @@ function renderOrderCard() {
       <!-- Order 1 -->
       <div class="order-card">
         <div class="order-header">
-          <div class="order-id">订单号：<span>HG2607120001</span></div>
+          <div class="order-id">订单号：<span>AB2607120001</span></div>
           <span class="order-status-badge status-collecting">集货中</span>
         </div>
         <div class="order-body">
@@ -2257,7 +2257,7 @@ function renderOrderCard() {
       <!-- Order 2 -->
       <div class="order-card">
         <div class="order-header">
-          <div class="order-id">订单号：<span>HG2606280002</span></div>
+          <div class="order-id">订单号：<span>AB2606280002</span></div>
           <span class="order-status-badge status-transit">运输中</span>
         </div>
         <div class="order-body">
@@ -2455,7 +2455,7 @@ function renderSuccessCard(orderNo) {
       <div class="success-desc">
         买手将于今日内开始采购，商品将在下周一（7月15日）随美国区域集运批次统一发货，预计 7月22–25日送达提货地址
       </div>
-      <div class="success-order-id">订单号：HG2607130003</div>
+      <div class="success-order-id">订单号：AB2607130003</div>
       <button class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:8px" onclick="trackNewOrder()">
         📦 追踪订单
       </button>
@@ -2476,7 +2476,7 @@ function confirmPayment() {
   pendingProduct = null;
   renderTyping();
   setTimeout(() => {
-    renderAICard(renderSuccessCard('HG2607130003'));
+    renderAICard(renderSuccessCard('AB2607130003'));
     renderAIMsg('<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>每周一统一发货，本次将于 <strong>7月15日</strong> 随美国批次发出</p><p>🔔 <strong>通知方式：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>💬 <strong>有问题吗？</strong>直接告诉我就好！</p>', true);
   }, 1200);
 }
@@ -2496,7 +2496,7 @@ function addToWishlist() {
 function shareProduct() {
   showToast('已生成分享链接，可发送给朋友 📤');
   setTimeout(() => {
-    renderAIMsg('🔗 商品分享链接已生成！您可以将链接发送给朋友，他们点击后可直接在 HiGoBuy 下单。<br><br>如果朋友通过您的链接成功下单，您将获得 <strong>$ 2</strong> 的社区返佣哦～');
+    renderAIMsg('🔗 商品分享链接已生成！您可以将链接发送给朋友，他们点击后可直接在 AIBuyWorld 下单。<br><br>如果朋友通过您的链接成功下单，您将获得 <strong>$ 2</strong> 的社区返佣哦～');
   }, 800);
 }
 
@@ -2774,7 +2774,7 @@ function processInput(text) {
   if (lower.includes('运费') || lower.includes('shipping') || lower.includes('怎么算') || lower.includes('集运') || lower.includes('费用') || lower.includes('多少钱') || lower.includes('价格')) {
     renderTyping();
     setTimeout(() => {
-      renderAIMsg('✈️ 海卖购采用区域智能集运，相比传统单件邮寄可节省 30–50% 运费：');
+      renderAIMsg('✈️ AIBuyWorld采用区域智能集运，相比传统单件邮寄可节省 30–50% 运费：');
       setTimeout(() => renderAICard(renderShippingCard()), 400);
     }, 800);
     return;
@@ -2784,7 +2784,7 @@ function processInput(text) {
   if (lower.includes('怎么') || lower.includes('如何') || lower.includes('教') || lower.includes('指南') || lower.includes('流程') || lower.includes('步骤') || lower.includes('购物') || lower.includes('guide') || lower.includes('how')) {
     renderTyping();
     setTimeout(() => {
-      renderAIMsg(`<p>📖 <strong>HiGoBuy 购物流程超简单，4步搞定：</strong></p>
+      renderAIMsg(`<p>📖 <strong>AIBuyWorld 购物流程超简单，4步搞定：</strong></p>
 <p><strong>① 发链接</strong> — 把淘宝/京东/天猫商品链接发给我</p>
 <p><strong>② 确认下单</strong> — 我通过 Flylink 解析商品，显示美元价格（含集运），您确认即可</p>
 <p><strong>③ 支付</strong> — 支持信用卡 / PayPal / Zelle / Apple Pay，货款归买手，运费归平台分开结算</p>
@@ -2798,7 +2798,7 @@ function processInput(text) {
   if (lower.includes('你好') || lower.includes('hello') || lower.match(/^hi\b/) || lower.includes('嗨') || lower.includes('早') || lower.includes('在吗')) {
     renderTyping();
     setTimeout(() => {
-      renderAIMsg(`<p>👋 您好，林晓雯！我是 HiGo 助手，随时为您服务～</p><p>您可以：<br>🔗 粘贴淘宝/京东链接直接下单<br>📦 查询 2 个进行中的订单<br>❤️ 查看 ${wishlist.length} 件心愿单商品<br>⭐ 看看美国社区好物推荐</p><p>今天想买什么？</p>`);
+      renderAIMsg(`<p>👋 您好，林晓雯！我是 AIBuyWorld 助手，随时为您服务～</p><p>您可以：<br>🔗 粘贴淘宝/京东链接直接下单<br>📦 查询 2 个进行中的订单<br>❤️ 查看 ${wishlist.length} 件心愿单商品<br>⭐ 看看美国社区好物推荐</p><p>今天想买什么？</p>`);
     }, 600);
     return;
   }
@@ -2820,7 +2820,7 @@ function handleProductLink(product) {
     group.innerHTML = `
       <div class="msg-meta">
         <div class="ai-avatar">🤖</div>
-        <span class="msg-sender-name">HiGo 助手</span>
+        <span class="msg-sender-name">AIBuyWorld 助手</span>
         <span class="msg-time">${getTime()}</span>
       </div>
       <div class="msg-card-wrap" id="flylinkGroup">${renderFlylinkCard(product)}</div>
@@ -2900,7 +2900,7 @@ function newChat() {
   document.getElementById('messages').innerHTML = `
     <div class="welcome-screen" id="welcomeScreen">
       <div class="welcome-logo">🛍️</div>
-      <div class="welcome-title">您好，我是 HiGo 购物助手</div>
+      <div class="welcome-title">您好，我是 AIBuyWorld 购物助手</div>
       <div class="welcome-sub">粘贴任意淘宝、京东商品链接，我会帮您一键转化、比价、下单，并安排集运直送到您家门口</div>
       <div class="welcome-cards">
         <div class="welcome-card" onclick="quickAction('link')">
@@ -2952,7 +2952,7 @@ const CHAT_HISTORIES = {
       { role: 'user', text: '愿意代他人收货' },
       { role: 'ai', type: 'payment', product: 'taobao_nike' },
       { role: 'user', text: '已用信用卡付款了 ✅' },
-      { role: 'ai', type: 'success', orderNo: 'HG2607120001' },
+      { role: 'ai', type: 'success', orderNo: 'AB2607120001' },
       { role: 'ai', text: '<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>本次将于 <strong>7月15日（周一）</strong> 随美国集运批次统一发出</p><p>🔔 <strong>通知：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>祝您购物愉快！👟✨</p>' },
     ]
   },
@@ -3030,7 +3030,7 @@ async function replayUserTypesInput(text) {
 function appendReplayTyping(container) {
   const group = document.createElement('div');
   group.className = 'msg-group ai';
-  group.innerHTML = '<div class="msg-meta"><div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span></div>'
+  group.innerHTML = '<div class="msg-meta"><div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span></div>'
     + '<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
   container.appendChild(group);
   scrollToBottom();
@@ -3042,7 +3042,7 @@ function appendReplayAICard(container, cardHTML, timeStr) {
   group.className = 'msg-group ai';
   const meta = document.createElement('div');
   meta.className = 'msg-meta';
-  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
   const wrap = document.createElement('div');
   wrap.className = 'msg-card-wrap';
   wrap.innerHTML = cardHTML;
@@ -3064,7 +3064,7 @@ async function replayProductFlow(product, container, timeStr) {
   group.className = 'msg-group ai';
   const meta = document.createElement('div');
   meta.className = 'msg-meta';
-  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
   group.appendChild(meta);
 
   const cardWrap = document.createElement('div');
@@ -3157,7 +3157,7 @@ async function replayConversation(chatId) {
         introG.className = 'msg-group ai';
         const introMeta = document.createElement('div');
         introMeta.className = 'msg-meta';
-        introMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+        introMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
         const introBubble = document.createElement('div');
         introBubble.className = 'msg-bubble';
         introG.appendChild(introMeta);
@@ -3206,7 +3206,7 @@ async function replayConversation(chatId) {
         wG.className = 'msg-group ai';
         const wMeta = document.createElement('div');
         wMeta.className = 'msg-meta';
-        wMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+        wMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
         const wBubble = document.createElement('div');
         wBubble.className = 'msg-bubble';
         wG.appendChild(wMeta);
@@ -3237,7 +3237,7 @@ async function replayConversation(chatId) {
         const tEl = appendReplayTyping(msgs);
         await replayDelay(700);
         tEl.remove();
-        appendReplayAICard(msgs, renderSuccessCard(step.orderNo || 'HG2607130003'), timeStr);
+        appendReplayAICard(msgs, renderSuccessCard(step.orderNo || 'AB2607130003'), timeStr);
 
       } else if (step.text) {
         await replayDelay(500);
@@ -3249,7 +3249,7 @@ async function replayConversation(chatId) {
         g.className = 'msg-group ai';
         const gMeta = document.createElement('div');
         gMeta.className = 'msg-meta';
-        gMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
+        gMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
         const fdbk = document.createElement('div');
