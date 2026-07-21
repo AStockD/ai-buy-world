@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { ZodError } from 'zod';
 import { config } from './lib/config.js';
 import { prisma } from './lib/prisma.js';
 import { redis } from './lib/redis.js';
@@ -12,6 +13,24 @@ const app = Fastify({
       options: { translateTime: 'HH:MM:ss', ignore: 'pid,hostname' },
     },
   },
+});
+
+// 全局错误处理
+app.setErrorHandler((err, req, reply) => {
+  if (err instanceof ZodError) {
+    return reply.code(400).send({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: err.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; '),
+      },
+    });
+  }
+  app.log.error(err);
+  return reply.code(err.statusCode || 500).send({
+    success: false,
+    error: { code: 'INTERNAL_ERROR', message: '服务器内部错误' },
+  });
 });
 
 async function start() {
