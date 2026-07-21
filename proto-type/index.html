@@ -2665,11 +2665,17 @@ function removeWishlistItem(id) {
 
 function buyRecoItem(name, price) {
   renderUserMsg(`我想买这个：${name}`);
-  conversationState = 'idle';
-  renderTyping();
-  setTimeout(() => {
-    renderAIMsg(`很好的选择！<strong>${name}</strong> 在美国社区非常受欢迎。<br><br>请将商品的淘宝/京东链接发给我，我来帮您通过 Flylink 转化并下单。<br><br>如果没有链接，也可以直接说"帮我找这款商品"，我来协助搜索 😊`);
-  }, 900);
+  const priceNum = parseFloat(price.replace(/[^0-9.]/g, ''));
+  pendingProduct = {
+    name: name,
+    emoji: '🛍️',
+    price: priceNum,
+    currency: '$',
+    shipping: 4.00,
+    source: '社区推荐',
+    originalPrice: ''
+  };
+  setTimeout(() => startPurchase(), 600);
 }
 
 function trackNewOrder() {
