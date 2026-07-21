@@ -2,7 +2,8 @@
 
 > 基于 PRD v1.0 + TECH_DESIGN v1.0 + 当前实现状态  
 > 日期：2026-07-21  
-> 当前完成度：~40%
+> 当前完成度：~65%  
+> 上次更新：Iteration 1 + Iteration 2 大部分完成，已提交 `61ffddb`
 
 ---
 
@@ -13,7 +14,7 @@
 - [x] 对话 UI（SSE 流式渲染、消息历史、欢迎页）
 - [x] FlyLink 商品解析 → 商品卡片展示
 - [x] 商品卡片 SKU 规格选择（按钮交互 + 状态管理）
-- [x] 心愿单页面（列表/添加/移除）
+- [x] 心愿单页面（列表/添加/移除/批量下单/单件购买）
 - [x] 订单页面（列表/详情）
 - [x] 地址管理页面（CRUD + 设默认）
 - [x] 个人页（基础框架）
@@ -21,118 +22,67 @@
 - [x] 底部 Tab 导航
 - [x] 推荐卡片、运费卡片、地址卡片
 - [x] BFF 代理（Next.js catch-all → Fastify，SSE 支持）
+- [x] 卡片注册表模式（card-registry.tsx，替代硬编码 switch/case）
+- [x] 购买流程卡片全链路（AddressSelect/Willing/BatchSelect/Payment/Success）
+- [x] 商品卡片按钮交互（心愿单/购买 → onAction → sendMessage）
+- [x] 订单物流时间线 UI（5 步进度条 + 状态颜色）
+- [x] AI 反馈按钮（👍/👎）
+- [x] 设置页（/settings）
+- [x] 购物指南页（/guide）
+- [x] 社区推荐独立页（/community + 来源筛选）
+- [x] 商品分享按钮（clipboard copy）
+- [x] PWA 基础（Service Worker + manifest + 离线缓存）
+- [x] 前端会话状态机（store-session.ts, Zustand）
+- [x] 地址表单组件（AddressForm.tsx，按国家动态字段）
 
 ### 后端
 - [x] AI Agent 引擎（意图识别 + Tool Calling + LLM 流式输出）
-- [x] 6 个 Agent Tool（flylink-parse, query-orders, manage-wishlist, calculate-shipping, manage-address, get-recommendations）
+- [x] 8 个 Agent Tool（flylink-parse, query-orders, manage-wishlist, calculate-shipping, manage-address, get-recommendations, select-sku, create-order）
 - [x] IntentRegistry（数据库 + 默认配置回退）
 - [x] FlyLink 客户端封装（convert + publish 全链路）
 - [x] 11 个后端服务文件（address, auth, batch, conversation, discount, exchange, flylink, notification, order, product/pricing, wishlist）
 - [x] 数据库 17 张表（Prisma Schema + PostgreSQL）
-- [x] Redis 缓存
+- [x] Redis 缓存（会话状态 + 限流 + 上下文热数据）
 - [x] JWT 认证 + 限流中间件
 - [x] SSE 流式通信
+- [x] 会话上下文注入（LLM 感知当前商品/地址/订单状态）
+- [x] 订单状态流转 + FlyLink 同步（transitionStatus）
+- [x] Webhook 端点（FlyLink 签名验证 + mock 支付测试）
+- [x] 批次推荐路由（/api/batches/recommend）
+- [x] 订单号生成（Redis INCR: AB + YYMMDD + 4位序号）
+- [x] 多轮对话状态管理（Redis SessionState + context）
 
 ### 测试
 - [x] E2E 测试 31/31 通过（Playwright）
 - [x] 后端单元测试（auth, address, chat, cache, config, product-wishlist-order, business-services）
+- [x] 购买流程 E2E 验证（FlyLink 真实解析 → 心愿单 → 下单 → Mock 支付 → 状态流转，DB + API 数据验证）
 
 ---
 
 ## 迭代计划
 
-### Iteration 1：完整购买闭环（核心交易链路）
+### Iteration 1：完整购买闭环（核心交易链路） ✅ 已完成
 
 **目标**：用户能从粘贴链接到完成支付，走通整个购买流程
 
 #### 前端任务
 
-- [ ] **1.1 商品卡片按钮交互**
-  - "立即购买"按钮 onClick → 触发地址选择流程
-  - "加入心愿单"按钮 onClick → 调用 manage-wishlist tool
-  - 文件：`apps/web/src/components/cards/ProductCard.tsx`
-
-- [ ] **1.2 地址选择卡片（下单流程）**
-  - 无地址 → 展示地址填写表单（动态字段，基于 AddressFormat）
-  - 单地址 → 展示确认卡片 + "使用新地址"入口
-  - 多地址 → 展示选择列表（默认 isDefault），支持切换
-  - 新建组件：`apps/web/src/components/cards/AddressSelectCard.tsx`
-  - 参考：PRD §3.3.3
-
-- [ ] **1.3 代他人收货意愿卡片**
-  - 愿意/不愿意单选，说明 8 折优惠
-  - 选择后更新用户意愿偏好（不影响本次订单地址）
-  - 新建组件：`apps/web/src/components/cards/WillingCard.tsx`
-  - 参考：PRD §3.3.2
-
-- [ ] **1.4 批次选择卡片**
-  - 展示推荐批次列表（区域、代收人、订单数、推荐理由）
-  - 三种推荐标签：运费最优 / 货值保障 / 货量最大
-  - 选中后高亮，进入支付
-  - 新建组件：`apps/web/src/components/cards/BatchSelectCard.tsx`
-  - 参考：PRD §3.3.4, TECH_DESIGN §9.10.4
-
-- [ ] **1.5 支付卡片**
-  - 顶部合计金额 + 费用明细（货款/运费/合计）
-  - 支付方式选择（信用卡/PayPal/Zelle/Apple Pay）
-  - "确认支付"按钮 → 跳转 FlyLink 支付页
-  - 集运匹配信息展示
-  - 新建组件：`apps/web/src/components/cards/PaymentCard.tsx`
-  - 参考：PRD §3.4
-
-- [ ] **1.6 支付成功卡片**
-  - 订单号、金额、预计发货时间、下一步提示
-  - 新建组件：`apps/web/src/components/cards/SuccessCard.tsx`
-
-- [ ] **1.7 前端会话状态机（sessionStore）**
-  - Zustand store 跟踪当前对话流程阶段
-  - 阶段：IDLE → PARSING → PRODUCT_VIEWED → SKU_SELECTED → ADDRESS_CONFIRM → BATCH_SELECT → PAYMENT_INIT → PROCESSING
-  - 新建文件：`apps/web/src/lib/store-session.ts`
-  - 参考：TECH_DESIGN §11.4
+- [x] **1.1 商品卡片按钮交互** → `ProductCard.tsx` onAction('wishlist'/'buy') → sendMessage
+- [x] **1.2 地址选择卡片（下单流程）** → `AddressSelectCard.tsx` + `AddressForm.tsx`
+- [x] **1.3 代他人收货意愿卡片** → `WillingCard.tsx`
+- [x] **1.4 批次选择卡片** → `BatchSelectCard.tsx`
+- [x] **1.5 支付卡片** → `PaymentCard.tsx`
+- [x] **1.6 支付成功卡片** → `SuccessCard.tsx`
+- [x] **1.7 前端会话状态机（sessionStore）** → `store-session.ts`
 
 #### 后端任务
 
-- [ ] **1.8 select_sku Tool**
-  - 为商品选择规格，返回更新后的价格和重量
-  - 新建文件：`apps/server/src/agent/tools/select-sku.ts`
-  - 注册到 tool-registry
-  - 参考：TECH_DESIGN §6.2
-
-- [ ] **1.9 订单创建服务**
-  - 创建 Order（状态：待支付）
-  - 调用 FlyLink 创建订单 API → 获取 flylinkOrderId + flylinkPaymentUrl
-  - 订单号生成：Redis INCR `AB` + `YYMMDD` + 4位序号
-  - 扩展 order.service.ts
-  - 参考：TECH_DESIGN §7.2.5, §9.10
-
-- [ ] **1.10 多轮对话状态机**
-  - Redis 存储会话状态（conversationId → state + context）
-  - 状态流转：IDLE → PARSING → PRODUCT_VIEWED → SKU_SELECTED → ADDRESS_CONFIRM → BATCH_SELECT → PAYMENT_INIT → PROCESSING
-  - 超时 30 分钟自动重置为 IDLE
-  - 支付锁价窗口 15 分钟
-  - 新建文件：`apps/server/src/agent/state-machine.ts`
-  - 参考：TECH_DESIGN §6.4
-
-- [ ] **1.11 create_order Tool**
-  - Agent 可调用的下单 Tool
-  - 参数：productId, skuId, addressId, batchId, willingToReceiveForOthers
-  - 新建文件：`apps/server/src/agent/tools/create-order.ts`
-  - 参考：TECH_DESIGN §6.2
-
-- [ ] **1.12 FlyLink Webhook 端点**
-  - POST `/api/webhooks/flylink`
-  - 签名验证 + 幂等处理
-  - 事件：payment.completed / payment.failed
-  - 支付完成后：更新订单状态 → 回调 FlyLink → 触发后续流程 → SSE 推送
-  - 新建文件：`apps/server/src/api/webhooks/flylink.routes.ts`
-  - 参考：TECH_DESIGN §9.10.1
-
-- [ ] **1.13 订单状态流转 + FlyLink 回调**
-  - 状态：待支付 → 已支付 → 集货中 → 运输中 → 待提货 → 已提货
-  - 每个状态变更回调 FlyLink 同步
-  - 失败重试 5 次（指数退避）
-  - 扩展 order.service.ts
-  - 参考：TECH_DESIGN §9.10.2
+- [x] **1.8 select_sku Tool** → `select-sku.ts`
+- [x] **1.9 订单创建服务** → `order.service.ts` 扩展 + `create-order.ts`
+- [x] **1.10 多轮对话状态机** → `conversation.service.ts` SessionState + context 扩展
+- [x] **1.11 create_order Tool** → `create-order.ts`
+- [x] **1.12 FlyLink Webhook 端点** → `webhook.routes.ts`（含 mock 支付测试端点）
+- [x] **1.13 订单状态流转 + FlyLink 回调** → `order.service.ts` transitionStatus + FlyLink sync
 
 #### 依赖
 | 项目 | 说明 | 阻塞程度 |
@@ -142,61 +92,21 @@
 
 ---
 
-### Iteration 2：体验完善 + 前端补全
+### Iteration 2：体验完善 + 前端补全 ✅ 基本完成（剩余 1 项）
 
 **目标**：PRD 中所有 UI 功能全部可用
 
-- [ ] **2.1 订单物流时间线**
-  - OrderCard 中展示 5 步时间线（已下单→国内集货→国际发运→到达→末端配送）
-  - 状态颜色：待支付灰/集货中橙/运输中紫/待提货蓝/已提货绿
-  - 修改：`apps/web/src/components/cards/OrderCard.tsx`
-  - 参考：PRD §3.5, TECH_DESIGN §11.12
-
-- [ ] **2.2 对话历史回放**
-  - 侧边栏历史对话点击后回放（打字机效果）
-  - 修改：`apps/web/src/components/Sidebar.tsx`, `ChatPage.tsx`
-  - 参考：TECH_DESIGN §11.13
-
-- [ ] **2.3 AI 反馈（👍/👎）**
-  - 消息气泡下方反馈按钮
-  - 写入 message.feedback 字段（1=👍, -1=👎）
-  - 修改：`ChatPage.tsx`, 新增 API endpoint
-
-- [ ] **2.4 设置页**
-  - `/settings` 页面：语言切换、通知偏好、关于、版本
-  - 新建：`apps/web/src/app/settings/page.tsx`
-
-- [ ] **2.5 购物指南页**
-  - `/guide` 页面：4 步购物流程说明（粘贴链接→选规格→确认地址→支付下单）
-  - 新建：`apps/web/src/app/guide/page.tsx`
-
-- [ ] **2.6 社区推荐独立页**
-  - `/community` 页面：2×2 网格 + 来源筛选标签（全部/订单历史/周边/平台精选/个性化）
-  - "查看全部"展开完整榜单
-  - 新建：`apps/web/src/app/community/page.tsx`
-
-- [ ] **2.7 心愿单增强**
-  - "一键全部下单"按钮 → 批量进入购买流程
-  - 单件购买按钮 → 进入正常下单流程（Iteration 1 链路）
-  - 修改：`apps/web/src/app/wishlist/page.tsx`
-
-- [ ] **2.8 分享功能**
-  - 商品卡片分享按钮 → 生成分享链接 + 社区返佣提示
-  - 修改：`ProductCard.tsx`
-
-- [ ] **2.9 前端卡片注册表**
-  - `registerCard(type, component)` 模式
-  - 替代 ChatPage 中的硬编码卡片渲染
-  - 新建：`apps/web/src/lib/card-registry.tsx`
-  - 参考：TECH_DESIGN §11.6
-
-- [ ] **2.10 PWA 基础**
-  - next-pwa 配置 + Service Worker + manifest.json + 离线缓存
-  - 参考：TECH_DESIGN §11.9
-
-- [ ] **2.11 地址表单国际化**
-  - 根据 AddressFormat 表动态渲染不同国家的地址表单字段
-  - 修改：`apps/web/src/components/cards/AddressCard.tsx` 或新建表单组件
+- [x] **2.1 订单物流时间线** → OrderCard 5 步时间线 + 状态颜色
+- [ ] **2.2 对话历史回放** → 侧边栏历史对话点击后回放（打字机效果）← **待完成**
+- [x] **2.3 AI 反馈（👍/👎）** → ChatPage 消息下方反馈按钮
+- [x] **2.4 设置页** → `/settings` 页面
+- [x] **2.5 购物指南页** → `/guide` 页面（4 步流程说明）
+- [x] **2.6 社区推荐独立页** → `/community` 页面（来源筛选标签）
+- [x] **2.7 心愿单增强** → 批量下单 + 单件购买按钮
+- [x] **2.8 分享功能** → ProductCard 分享按钮（clipboard copy）
+- [x] **2.9 前端卡片注册表** → `card-registry.tsx`（registerCard 模式）
+- [x] **2.10 PWA 基础** → sw.js + manifest.json + layout.tsx 注册
+- [x] **2.11 地址表单国际化** → `AddressForm.tsx`（按 AddressFormat 动态渲染）
 
 #### 依赖
 | 项目 | 说明 | 阻塞程度 |
@@ -387,15 +297,34 @@
 ## 执行顺序建议
 
 ```
-Iteration 1 (完整购买闭环)  ← 核心链路，最高优先
+Iteration 1 (完整购买闭环)  ✅ 已完成
     ↓
-Iteration 2 (体验完善)      ← 前端补全，无外部依赖
+Iteration 2 (体验完善)      ✅ 基本完成（仅剩 2.2 对话历史回放）
     ↓
-Iteration 3 (业务基础设施)  ← 后端引擎，需汇率API + FlyLink凭证
+Iteration 3 (业务基础设施)  ← 下一步，后端引擎，需汇率API + FlyLink凭证
     ↓
 Iteration 4 (增长运营)      ← 可根据业务优先级调整
     ↓
 Iteration 5 (生态扩展)      ← 依赖最多，按需启动
 ```
+
+## 下一步工作建议
+
+1. **完成 2.2 对话历史回放**（Iteration 2 最后一项）
+   - Sidebar 点击历史对话 → 加载消息 → 打字机效果逐条展示
+   - 涉及：`Sidebar.tsx`, `ChatPage.tsx`
+
+2. **启动 Iteration 3 — 业务基础设施**（优先级最高）
+   - 3.1 BullMQ 任务队列（异步任务框架）
+   - 3.2 汇率更新服务（每日定时 7 步算法）
+   - 3.3 批次推荐算法（每小时刷新）
+   - 3.9 ServiceRegistry（统一注册所有服务）
+   - 3.10 Redis 上下文管理优化
+
+3. **技术债 / 改进项**
+   - 前端购买流程 UI 联调（卡片间流转在真实对话中验证）
+   - 真实 FlyLink 支付对接（替换 mock 支付）
+   - 集成测试覆盖关键路径（支付/下单/状态流转）
+   - 前端 Docker 构建验证（确保生产模式所有功能可用）
 
 Iteration 1 → 2 → 3 建议连续完成，构成完整的产品闭环。
