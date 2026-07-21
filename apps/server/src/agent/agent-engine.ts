@@ -11,6 +11,8 @@ import './tools/manage-wishlist.js';
 import './tools/calculate-shipping.js';
 import './tools/manage-address.js';
 import './tools/get-recommendations.js';
+import './tools/select-sku.js';
+import './tools/create-order.js';
 
 export interface AgentContext {
   userId: string;
@@ -38,6 +40,23 @@ export class AgentEngine {
       role: h.role as 'user' | 'assistant',
       content: h.content,
     }));
+
+    // Inject session context so LLM knows current state
+    const ctxParts: string[] = [];
+    const sCtx = sessionState.context;
+    if (sCtx.currentProduct) ctxParts.push(`当前浏览商品: ${sCtx.currentProduct.name}（ID: ${sCtx.currentProduct.productId}）`);
+    if (sCtx.selectedSku) ctxParts.push(`已选规格: ${JSON.stringify(sCtx.selectedSku.specs)}`);
+    if (sCtx.selectedAddress) ctxParts.push(`已选地址: ${sCtx.selectedAddress.formatted}`);
+    if (sCtx.selectedBatch) ctxParts.push(`已选批次: ${sCtx.selectedBatch.area}`);
+    if (sCtx.currentOrder) ctxParts.push(`当前订单: ${sCtx.currentOrder.orderNo}`);
+    if (sCtx.willingToReceiveForOthers !== undefined) ctxParts.push(`代他人收货: ${sCtx.willingToReceiveForOthers ? '愿意' : '不愿意'}`);
+
+    if (ctxParts.length > 0) {
+      messages.push({
+        role: 'system' as const,
+        content: `[当前会话状态: ${sessionState.state}]\n${ctxParts.join('\n')}\n\n用户提到"这个商品"或要求加入心愿单/下单时，请直接使用上述商品ID调用对应工具，无需再询问用户。`,
+      });
+    }
 
     // Get tool schema for function calling
     const toolSchema = toolRegistry.getFunctionCallingSchema();

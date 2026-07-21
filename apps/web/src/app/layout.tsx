@@ -13,6 +13,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const token = localStorage.getItem('accessToken');
     if (token) api.setToken(token);
     restore();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
   }, [restore]);
 
   if (isLoading) {
@@ -29,6 +33,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="zh-CN">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#7c3aed" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body className="antialiased">
         {children}
       </body>

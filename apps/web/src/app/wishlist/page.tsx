@@ -75,26 +75,42 @@ export default function WishlistPage() {
               </div>
             ) : (
               <div className="space-y-3">
+                {items.length > 1 && (
+                  <button
+                    onClick={() => alert('批量下单功能即将上线')}
+                    className="w-full rounded-xl bg-brand py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark"
+                  >
+                    一键全部下单 ({items.length} 件)
+                  </button>
+                )}
                 {items.map((item: any) => (
                   <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 shadow-sm">
                     {item.product?.image_url && (
                       <img src={item.product.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />
                     )}
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-hidden">
                       <p className="text-sm text-txt line-clamp-2">{item.product?.name || '商品'}</p>
                       <div className="mt-1 flex items-center gap-2">
                         <span className="rounded-full bg-brand-light px-2 py-0.5 text-xs text-brand">{item.status}</span>
                         <span className="text-xs text-txt-muted">{item.region}</span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleRemove(item.id)}
-                      className="rounded-lg p-1.5 text-txt-muted transition-colors hover:bg-danger/10 hover:text-danger"
-                    >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    <div className="flex flex-col gap-1.5">
+                      <button
+                        onClick={() => alert(`购买功能: ${item.product?.name || '商品'}`)}
+                        className="rounded-lg bg-brand px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-brand-dark"
+                      >
+                        购买
+                      </button>
+                      <button
+                        onClick={() => handleRemove(item.id)}
+                        className="rounded-lg p-1.5 text-txt-muted transition-colors hover:bg-danger/10 hover:text-danger"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
