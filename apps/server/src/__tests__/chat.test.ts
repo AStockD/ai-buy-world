@@ -23,6 +23,9 @@ beforeAll(async () => {
   await app.register(chatRoutes, { prefix: '/api/chat' });
   await app.ready();
 
+  await prisma.wishlist.deleteMany({ where: { user_id: { in: await prisma.user.findMany({ where: { email: 'chattest@example.com' }, select: { id: true } }).then(u => u.map(x => x.id)) } } });
+  await prisma.notification.deleteMany({ where: { user_id: { in: await prisma.user.findMany({ where: { email: 'chattest@example.com' }, select: { id: true } }).then(u => u.map(x => x.id)) } } });
+  await prisma.transaction.deleteMany({ where: { user_id: { in: await prisma.user.findMany({ where: { email: 'chattest@example.com' }, select: { id: true } }).then(u => u.map(x => x.id)) } } });
   await prisma.user.deleteMany({ where: { email: 'chattest@example.com' } });
   const result = await authService.register('chattest@example.com', '123456', '对话测试');
   token = result.accessToken;
@@ -35,6 +38,10 @@ afterAll(async () => {
     await prisma.message.deleteMany({ where: { conversation_id: c.id } });
   }
   await prisma.conversation.deleteMany({ where: { user_id: userId } });
+  await prisma.wishlist.deleteMany({ where: { user_id: userId } });
+  await prisma.notification.deleteMany({ where: { user_id: userId } });
+  await prisma.transaction.deleteMany({ where: { user_id: userId } });
+  await prisma.order.deleteMany({ where: { user_id: userId } });
   await prisma.user.deleteMany({ where: { email: 'chattest@example.com' } });
 
   const ctxKeys = await redis.keys('conv:ctx:*');

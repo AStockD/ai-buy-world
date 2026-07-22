@@ -85,6 +85,42 @@ export class NotificationService {
       relatedEntityId: productId,
     });
   }
+
+  // 批次截止提醒：查找 24h 内截止的批次，通知相关用户
+  async notifyBatchDeadline(): Promise<{ batchesChecked: number; notificationsSent: number }> {
+    const now = new Date();
+    const deadline = new Date(now.getTime() + 24 * 3600 * 1000);
+
+    const expiringBatches = await prisma.deliveryBatch.findMany({
+      where: {
+        status: '集货中',
+        order_deadline: { gt: now, lte: deadline },
+      },
+    });
+
+    let notificationsSent = 0;
+    for (const batch of expiringBatches) {
+      const orders = await prisma.order.findMany({
+        where: { delivery_batch_id: batch.id },
+        select: { user_id: true },
+        distinct: ['user_id'],
+      });
+
+      for (const order of orders) {
+        await this.create({
+          userId: order.user_id,
+          type: 'batch_reminder',
+          title: '批次即将截止',
+          content: `您加入的批次「${batch.area}」将在 24 小时内截止下单，请尽快确认。`,
+          relatedEntityType: 'batch',
+          relatedEntityId: batch.id,
+        });
+        notificationsSent++;
+      }
+    }
+
+    return { batchesChecked: expiringBatches.length, notificationsSent };
+  }
 }
 
 export const notificationService = new NotificationService();
