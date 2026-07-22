@@ -131,6 +131,10 @@ export function Sidebar({ onMobileClose }: SidebarProps) {
           <span className="w-5 shrink-0 text-center text-[15px]">✈️</span>
           <span>运费计算</span>
         </div>
+        <Link href="/settings" onClick={onMobileClose} className="flex items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] text-sidebar-text transition-colors hover:bg-sidebar-hover">
+          <span className="w-5 shrink-0 text-center text-[15px]">⚙️</span>
+          <span>设置</span>
+        </Link>
       </div>
 
       {/* User Info */}

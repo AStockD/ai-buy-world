@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useChatStore } from '../lib/store-chat';
 import { useAuthStore } from '../lib/store-auth';
 import { getCardComponent } from '../lib/card-registry';
@@ -8,6 +9,7 @@ import { Sidebar } from './Sidebar';
 import { Drawer } from './Drawer';
 
 export function ChatPage() {
+  const router = useRouter();
   const { messages, isStreaming, sendMessage } = useChatStore();
   const user = useAuthStore((s) => s.user);
   const [input, setInput] = useState('');
@@ -79,7 +81,7 @@ export function ChatPage() {
             <button className="flex h-[34px] w-[34px] items-center justify-center rounded-lg border border-border text-txt-muted transition-colors hover:bg-surface-2 hover:text-brand" title="分享">
               🔗
             </button>
-            <button className="flex h-[34px] w-[34px] items-center justify-center rounded-lg border border-border text-txt-muted transition-colors hover:bg-surface-2 hover:text-brand" title="设置">
+            <button onClick={() => router.push('/settings')} className="flex h-[34px] w-[34px] items-center justify-center rounded-lg border border-border text-txt-muted transition-colors hover:bg-surface-2 hover:text-brand" title="设置">
               ⚙️
             </button>
           </div>
