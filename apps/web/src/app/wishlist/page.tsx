@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/store-auth';
+import { useChatStore } from '../../lib/store-chat';
 import { api } from '../../lib/api';
 import { Drawer } from '../../components/Drawer';
 import { Sidebar } from '../../components/Sidebar';
 
 export default function WishlistPage() {
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const sendMessage = useChatStore((s) => s.sendMessage);
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -31,6 +35,12 @@ export default function WishlistPage() {
       await api.removeFromWishlist(id);
       setItems((prev) => prev.filter((item) => item.id !== id));
     } catch { /* empty */ }
+  };
+
+  const handleBuy = (product: any) => {
+    const msg = `帮我下单购买这个商品，商品ID: ${product.id}`;
+    sendMessage(msg);
+    router.push('/');
   };
 
   if (!user) return null;
@@ -77,10 +87,11 @@ export default function WishlistPage() {
               <div className="space-y-3">
                 {items.length > 1 && (
                   <button
-                    onClick={() => alert('批量下单功能即将上线')}
-                    className="w-full rounded-xl bg-brand py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark"
+                    disabled
+                    className="w-full cursor-not-allowed rounded-xl bg-brand/50 py-2.5 text-[13px] font-semibold text-white/70"
+                    title="批量下单功能即将上线"
                   >
-                    一键全部下单 ({items.length} 件)
+                    一键全部下单 ({items.length} 件) — 即将上线
                   </button>
                 )}
                 {items.map((item: any) => (
@@ -97,7 +108,7 @@ export default function WishlistPage() {
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <button
-                        onClick={() => alert(`购买功能: ${item.product?.name || '商品'}`)}
+                        onClick={() => item.product && handleBuy(item.product)}
                         className="rounded-lg bg-brand px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-brand-dark"
                       >
                         购买
