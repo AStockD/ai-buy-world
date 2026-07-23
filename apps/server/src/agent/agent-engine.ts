@@ -58,7 +58,7 @@ export class AgentEngine {
       if (sCtx.pendingAction === 'create_order_after_address') {
         systemHint += `\n\n重要：用户刚提供了收货地址，请立即调用 manage_address（action=add）保存地址，然后调用 create_order 完成下单。不要只回复文字确认，必须调用工具。`;
       }
-      messages.unshift({
+      messages.push({
         role: 'system' as const,
         content: systemHint,
       });
