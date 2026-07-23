@@ -17,6 +17,7 @@ import { productService } from './services/product/product.service.js';
 import { orderService } from './services/order/order.service.js';
 import { discountService } from './services/discount/discount.service.js';
 import { batchRecommendService } from './services/batch/batch-recommend.service.js';
+import { batchService } from './services/batch/batch.service.js';
 import { conversationService } from './services/conversation/conversation.service.js';
 import { addressService } from './services/address/address.service.js';
 import { authService } from './services/auth/auth.service.js';
@@ -73,6 +74,20 @@ async function start() {
   await scheduleProductRefreshJob();
   await scheduleExchangeRateJob();
   app.log.info('Workers started: notification, product-refresh, exchange-rate');
+
+  // 批次物流推进：每 30 分钟检查到期批次
+  const BATCH_INTERVAL = 30 * 60 * 1000;
+  setInterval(async () => {
+    try {
+      const result = await batchService.processMatureBatches();
+      if (result.shipped > 0 || result.arrived > 0) {
+        app.log.info(`批次推进: ${result.shipped} 发运, ${result.arrived} 到达`);
+      }
+    } catch (err: any) {
+      app.log.error(`批次推进失败: ${err.message}`);
+    }
+  }, BATCH_INTERVAL);
+  app.log.info('Batch logistics scheduler started (every 30min)');
 
   const allowedOrigins = config.corsOrigin.split(',').map(s => s.trim());
   await app.register(cors, {

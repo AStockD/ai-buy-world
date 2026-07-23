@@ -13,6 +13,7 @@ import './tools/manage-address.js';
 import './tools/get-recommendations.js';
 import './tools/select-sku.js';
 import './tools/create-order.js';
+import './tools/manage-order.js';
 
 export interface AgentContext {
   userId: string;

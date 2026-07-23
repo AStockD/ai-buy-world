@@ -27,4 +27,4 @@ COPY --from=builder /app/apps/server/prisma ./apps/server/prisma
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "cd apps/server && node ../../node_modules/.bin/prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "cd apps/server && node ../../node_modules/.bin/prisma migrate deploy && ../../node_modules/.bin/tsx prisma/seed.ts && ../../node_modules/.bin/tsx prisma/ensure-partitions.ts && node dist/index.js"]

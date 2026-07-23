@@ -11,7 +11,7 @@ describe('config', () => {
 
   it('should have JWT config', () => {
     expect(config.jwt.secret).toBeTruthy();
-    expect(config.jwt.accessExpiry).toBe('15m');
-    expect(config.jwt.refreshExpiry).toBe('7d');
+    expect(config.jwt.accessExpiry).toBe('30d');
+    expect(config.jwt.refreshExpiry).toBe('365d');
   });
 });
