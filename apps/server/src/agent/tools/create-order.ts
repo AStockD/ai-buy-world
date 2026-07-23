@@ -71,29 +71,60 @@ toolRegistry.register({
         where: { id: params.addressId, user_id: userId },
       });
     }
+
     if (!address) {
-      address = await prisma.userAddress.findFirst({
-        where: { user_id: userId, is_default: true },
-      });
-    }
-    if (!address) {
-      address = await prisma.userAddress.findFirst({
+      // 查询用户所有地址
+      const allAddresses = await prisma.userAddress.findMany({
         where: { user_id: userId },
-      });
-    }
-    if (!address) {
-      // 没有地址时不中断流程，设置状态让 LLM 引导用户添加地址
-      await conversationService.setState(conversationId, {
-        state: 'ADDRESS_NEEDED',
-        context: { ...ctx, pendingAction: 'create_order_after_address' },
+        orderBy: { is_default: 'desc' },
       });
 
-      emitSSE('tool_result', { tool: 'create_order', result: { needsAddress: true } });
+      if (allAddresses.length === 0) {
+        // 没有地址时不中断流程，设置状态让 LLM 引导用户添加地址
+        await conversationService.setState(conversationId, {
+          state: 'ADDRESS_NEEDED',
+          context: { ...ctx, pendingAction: 'create_order_after_address' },
+        });
 
-      return {
-        needsAddress: true,
-        message: '用户尚未添加收货地址，请先引导用户提供收货地址（姓名、电话、州/省、城市、街道、邮编、国家），收到后再继续下单。',
-      };
+        emitSSE('tool_result', { tool: 'create_order', result: { needsAddress: true } });
+
+        return {
+          needsAddress: true,
+          message: '用户尚未添加收货地址，请先引导用户提供收货地址（姓名、电话、州/省、城市、街道、邮编、国家），收到后再继续下单。',
+        };
+      }
+
+      if (allAddresses.length > 1) {
+        // 多个地址时，让用户选择
+        await conversationService.setState(conversationId, {
+          state: 'ADDRESS_SELECTION',
+          context: { ...ctx, pendingAction: 'create_order_after_address_select' },
+        });
+
+        emitSSE('card', {
+          type: 'address_select_card',
+          data: {
+            addresses: allAddresses.map(a => ({
+              id: a.id,
+              recipientName: a.recipient_name,
+              phone: a.phone,
+              formatted: a.formatted,
+              is_default: a.is_default,
+            })),
+            selectedId: allAddresses.find(a => a.is_default)?.id || allAddresses[0].id,
+          },
+        });
+
+        emitSSE('tool_result', { tool: 'create_order', result: { needsAddressSelection: true } });
+
+        return {
+          needsAddressSelection: true,
+          message: '用户有多个收货地址，已展示地址选择卡片，等待用户选择地址后再继续下单。',
+        };
+      }
+
+      // 只有一个地址，直接使用
+      address = allAddresses[0];
     }
 
     const homeAddress = {

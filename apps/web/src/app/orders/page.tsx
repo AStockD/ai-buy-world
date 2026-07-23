@@ -10,6 +10,7 @@ export default function OrdersPage() {
   const user = useAuthStore((s) => s.user);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -20,10 +21,14 @@ export default function OrdersPage() {
 
   const loadOrders = async () => {
     setLoading(true);
+    setError('');
     try {
       const res = await api.listOrders(statusFilter || undefined);
       setOrders(res.items || []);
-    } catch { /* empty */ }
+    } catch (err: any) {
+      console.error('加载订单失败:', err);
+      setError(err.message || '加载订单失败');
+    }
     setLoading(false);
   };
 
@@ -75,6 +80,11 @@ export default function OrdersPage() {
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+              </div>
+            ) : error ? (
+              <div className="py-12 text-center">
+                <p className="text-sm text-red-500">{error}</p>
+                <button onClick={loadOrders} className="mt-3 text-sm text-brand hover:underline">重试</button>
               </div>
             ) : orders.length === 0 ? (
               <div className="py-12 text-center">

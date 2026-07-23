@@ -1,4 +1,6 @@
-export function WishlistCard({ data }: { data: any }) {
+'use client';
+
+export function WishlistCard({ data, onAction }: { data: any; onAction?: (action: string, payload?: any) => void }) {
   const items = data.items || [];
 
   if (items.length === 0) {
@@ -29,8 +31,18 @@ export function WishlistCard({ data }: { data: any }) {
             <p className="mt-0.5 text-[13px] font-bold text-accent">{item.product?.price || ''}</p>
           </div>
           <div className="flex gap-1.5">
-            <button className="rounded-md bg-brand px-2.5 py-1 text-[11px] font-semibold text-white">购买</button>
-            <button className="rounded-md border border-border bg-surface-2 px-2.5 py-1 text-[11px] font-semibold text-txt-muted">移除</button>
+            <button
+              onClick={() => onAction?.('buy', { productId: item.product?.productId || item.productId })}
+              className="rounded-md bg-brand px-2.5 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-brand-dark"
+            >
+              购买
+            </button>
+            <button
+              onClick={() => onAction?.('remove_wishlist', { itemId: item.id, productId: item.product?.productId || item.productId })}
+              className="rounded-md border border-border bg-surface-2 px-2.5 py-1 text-[11px] font-semibold text-txt-muted transition-colors hover:bg-border"
+            >
+              移除
+            </button>
           </div>
         </div>
       ))}

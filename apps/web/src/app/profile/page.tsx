@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../lib/store-auth';
 import { Drawer } from '../../components/Drawer';
 import { Sidebar } from '../../components/Sidebar';
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { user, logout } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -50,7 +52,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="mt-3 space-y-0.5 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-              <MenuItem label="我的地址" icon="📍" />
+              <MenuItem label="我的地址" icon="📍" onClick={() => router.push('/addresses')} />
               <MenuItem label="通知消息" icon="🔔" />
               <MenuItem label="购物指南" icon="📖" />
               <MenuItem label="关于我们" icon="ℹ️" />
@@ -71,9 +73,9 @@ export default function ProfilePage() {
   );
 }
 
-function MenuItem({ label, icon }: { label: string; icon: string }) {
+function MenuItem({ label, icon, onClick }: { label: string; icon: string; onClick?: () => void }) {
   return (
-    <button className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-2">
+    <button onClick={onClick} className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-2">
       <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-light text-brand">{icon}</span>
       <span className="text-sm text-txt">{label}</span>
       <svg className="ml-auto h-4 w-4 text-txt-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

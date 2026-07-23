@@ -90,7 +90,8 @@ toolRegistry.register({
     emitSSE('tool_result', { tool: 'manage_address', result: { action: params.action } });
 
     // 地址保存后，检查是否有待完成的下单操作
-    if (params.action === 'add' && sessionState.context.pendingAction === 'create_order_after_address') {
+    const pending = sessionState.context.pendingAction;
+    if (params.action === 'add' && (pending === 'create_order_after_address' || pending === 'create_order_after_address_select')) {
       await conversationService.setState(conversationId, {
         state: sessionState.state,
         context: { ...sessionState.context, pendingAction: undefined },
