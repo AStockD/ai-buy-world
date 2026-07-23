@@ -146,8 +146,12 @@ export function ChatPage() {
                           // 支付动作直接调用 API
                           if (action === 'pay' && payload?.orderId) {
                             try {
-                              await api.payOrder(payload.orderId);
-                              sendMessage(`订单 ${payload.orderNo || ''} 已支付成功`);
+                              const res = await api.payOrder(payload.orderId);
+                              if (res.success) {
+                                sendMessage(`订单 ${payload.orderNo || ''} 已支付成功`);
+                              } else {
+                                sendMessage(`支付失败：${res.error?.message || '请稍后重试'}`);
+                              }
                             } catch (err: any) {
                               sendMessage(`支付失败：${err.message || '请稍后重试'}`);
                             }

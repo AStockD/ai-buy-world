@@ -30,8 +30,9 @@ export async function orderRoutes(app: FastifyInstance) {
       const order = await orderService.mockPayment(req.params.id, userId);
       return { success: true, data: order };
     } catch (err: any) {
-      const code = err.message.startsWith('INVALID_TRANSITION') ? 'INVALID_TRANSITION' : 'ERROR';
-      return { success: false, error: { code, message: err.message } };
+      const msg = err?.message || '支付失败';
+      const code = msg.startsWith('INVALID_TRANSITION') ? 'INVALID_TRANSITION' : 'ERROR';
+      return { success: false, error: { code, message: msg } };
     }
   });
 
@@ -42,8 +43,9 @@ export async function orderRoutes(app: FastifyInstance) {
       const order = await orderService.cancelOrder(req.params.id, userId);
       return { success: true, data: order };
     } catch (err: any) {
-      const code = err.message.startsWith('INVALID_TRANSITION') ? 'INVALID_TRANSITION' : 'ERROR';
-      return { success: false, error: { code, message: err.message } };
+      const msg = err?.message || '取消失败';
+      const code = msg.startsWith('INVALID_TRANSITION') ? 'INVALID_TRANSITION' : 'ERROR';
+      return { success: false, error: { code, message: msg } };
     }
   });
 
@@ -58,10 +60,11 @@ export async function orderRoutes(app: FastifyInstance) {
       const order = await orderService.confirmPickup(req.params.id, userId, code);
       return { success: true, data: order };
     } catch (err: any) {
-      const code = err.message.startsWith('INVALID_TRANSITION') ? 'INVALID_TRANSITION'
-        : err.message.startsWith('INVALID_PICKUP_CODE') ? 'INVALID_PICKUP_CODE'
+      const msg = err?.message || '确认提货失败';
+      const code = msg.startsWith('INVALID_TRANSITION') ? 'INVALID_TRANSITION'
+        : msg.startsWith('INVALID_PICKUP_CODE') ? 'INVALID_PICKUP_CODE'
         : 'ERROR';
-      return { success: false, error: { code, message: err.message } };
+      return { success: false, error: { code, message: msg } };
     }
   });
 }

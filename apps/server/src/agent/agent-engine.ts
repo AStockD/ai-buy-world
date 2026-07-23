@@ -129,6 +129,12 @@ export class AgentEngine {
             content: `[Tool result: ${toolCall.name} returned ${JSON.stringify(result)}]`,
           });
 
+          // 如果已经通过卡片展示了结果，跳过后续 LLM 调用，避免文字重复卡片内容
+          if (collectedCards.length > 0) {
+            fullResponse = intentResponse.content || '';
+            continue;
+          }
+
           // Step 3: Generate natural response using main model (qwen-plus) with streaming
           const followUp = await llmClient.chatWithModel(
             config.llm.model,
