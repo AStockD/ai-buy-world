@@ -127,7 +127,6 @@ print(ps[0]['sha'] if ps else '')
   REMOTE_TREE=$(echo "$COMMIT_DATA" | python3 -c "import sys,json; print(json.load(sys.stdin)['tree']['sha'])")
 
   # 通过 API 获取变更的文件列表
-  CHANGED_FILES=""
   if [ -n "$PARENT_TREE" ]; then
     # 用比较 API 获取变更
     CHANGED_FILES=$(curl -s "${AUTH[@]}" "$API/compare/$PARENT_TREE...$REMOTE_COMMIT" 2>/dev/null \
