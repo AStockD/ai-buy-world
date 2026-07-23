@@ -155,8 +155,6 @@ export function ChatPage() {
                             willing_yes: '我愿意代他人收货',
                             willing_no: '不太方便，还是算了',
                             remove_wishlist: `从心愿单移除这个商品${pid}`,
-                            cancel_order: '取消这个订单',
-                            confirm_pickup: '确认提货',
                           };
                           const text = actionMessages[action];
                           if (text) sendMessage(text);
