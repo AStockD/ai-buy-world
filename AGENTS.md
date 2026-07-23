@@ -165,3 +165,55 @@
 2. 所有 WelcomeCard / Chip 快捷按钮 → 消息发送成功
 3. 错误场景 → 错误提示可见且可关闭
 4. 已有功能不受影响（全量 E2E 通过）
+
+---
+
+## 9. Git 工作流（重要）
+
+### 9.1 禁止使用 git push / git pull
+本机 git 的 GnuTLS 存在 SSL 握手问题，无法直接通过 HTTPS 访问 GitHub。**必须使用 API 脚本替代**。
+
+### 9.2 推送代码
+```bash
+export GITHUB_TOKEN=github_pat_xxx   # 首次使用需设置
+./scripts/push-via-api.sh            # 推送 main 分支
+./scripts/push-via-api.sh develop    # 推送指定分支
+```
+- 自动检测本地与远程的差异
+- 通过 GitHub Git Data API 逐个提交推送
+- 保持完整的提交历史
+
+### 9.3 拉取代码
+```bash
+export GITHUB_TOKEN=github_pat_xxx   # 首次使用需设置
+./scripts/pull-via-api.sh            # 拉取 main 分支
+./scripts/pull-via-api.sh develop    # 拉取指定分支
+```
+- 通过 GitHub API 获取远程更新
+- 通过 tree SHA 匹配检测等价提交
+- 自动下载变更文件并创建本地提交
+
+### 9.4 完整工作流
+```bash
+# 1. 拉取最新
+./scripts/pull-via-api.sh
+
+# 2. 开发、修改代码...
+
+# 3. 本地提交
+git add <files>
+git commit -m "feat: xxx"
+
+# 4. 推送到 GitHub
+./scripts/push-via-api.sh
+```
+
+### 9.5 部署流程
+```bash
+# 重建并部署
+docker compose build server web
+docker compose up -d server web
+
+# 执行 seed（首次部署或数据重置时）
+docker compose exec server sh -c "cd /app/apps/server && npx tsx prisma/seed.ts"
+```
