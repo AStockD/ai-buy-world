@@ -82,6 +82,13 @@ export class ConversationService {
     await SessionCache.set(conversationId, state as any);
   }
 
+  async updateTitle(conversationId: string, title: string) {
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { title, updated_at: new Date() },
+    });
+  }
+
   async delete(userId: string, conversationId: string) {
     await prisma.conversation.updateMany({
       where: { id: conversationId, user_id: userId },

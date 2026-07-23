@@ -93,6 +93,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }));
 
       await api.streamMessage(conversationId, content, (event, data) => {
+        if (event === 'conversation_switch') {
+          set((s) => ({
+            currentConversationId: data.conversationId,
+            conversations: [{ id: data.conversationId, title: data.title || '新商品解析', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), message_count: 0 }, ...s.conversations],
+            messages: s.messages.filter(m => m.role !== 'assistant' || m.content),
+          }));
+          return;
+        }
+        if (event === 'conversation_title_update') {
+          set((s) => ({
+            conversations: s.conversations.map((c) =>
+              c.id === data.conversationId ? { ...c, title: data.title } : c
+            ),
+          }));
+          return;
+        }
         if (event === 'text_delta') {
           set((s) => {
             const messages = [...s.messages];

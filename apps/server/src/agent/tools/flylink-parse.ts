@@ -52,6 +52,10 @@ toolRegistry.register({
       },
     });
 
+    // 将会话标题更新为商品名称
+    await conversationService.updateTitle(conversationId, product.name);
+    emitSSE('conversation_title_update', { conversationId, title: product.name });
+
     return {
       productId: product.id,
       isNew: result.isNew,
