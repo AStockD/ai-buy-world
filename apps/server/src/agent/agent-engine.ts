@@ -29,29 +29,12 @@ export class AgentEngine {
   ): Promise<string> {
     await intentRegistry.ensureLoaded();
 
-    // 检测新商品链接：如果当前会话已有商品状态，自动创建新会话
-    let { conversationId } = ctx;
-    const hasProductUrl = /https?:\/\/[^\s]+/.test(userMessage) || userMessage.includes('口令');
-
-    if (hasProductUrl) {
-      const currentState = await conversationService.getState(conversationId);
-      const hasProductContext = currentState.context.currentProduct ||
-        ['PRODUCT_VIEWED', 'SKU_SELECTED', 'ADDRESS_CONFIRM', 'ADDRESS_SELECTION', 'BATCH_SELECT', 'PAYMENT_INIT'].includes(currentState.state);
-
-      if (hasProductContext) {
-        const newConv = await conversationService.create(ctx.userId, '新商品解析');
-        conversationId = newConv.id;
-        ctx.conversationId = conversationId;
-        emitSSE('conversation_switch', { conversationId: newConv.id, title: newConv.title });
-      }
-    }
-
     // Save user message
-    await conversationService.addMessage(conversationId, 'user', userMessage);
+    await conversationService.addMessage(ctx.conversationId, 'user', userMessage);
 
     // Load conversation context
-    const history = await conversationService.getContext(conversationId);
-    const sessionState = await conversationService.getState(conversationId);
+    const history = await conversationService.getContext(ctx.conversationId);
+    const sessionState = await conversationService.getState(ctx.conversationId);
 
     // Build LLM messages
     const messages: LLMMessage[] = history.map(h => ({
@@ -75,7 +58,7 @@ export class AgentEngine {
       if (sCtx.pendingAction === 'create_order_after_address') {
         systemHint += `\n\n重要：用户刚提供了收货地址，请立即调用 manage_address（action=add）保存地址，然后调用 create_order 完成下单。不要只回复文字确认，必须调用工具。`;
       }
-      messages.unshift({
+      messages.push({
         role: 'system' as const,
         content: systemHint,
       });
