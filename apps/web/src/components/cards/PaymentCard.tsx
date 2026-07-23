@@ -1,28 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { api } from '../../lib/api';
-
 export function PaymentCard({ data, onAction }: { data: any; onAction?: (action: string, payload?: any) => void }) {
-  const [paying, setPaying] = useState(false);
-  const [paid, setPaid] = useState(data.status === '已支付');
-  const [error, setError] = useState('');
-
-  const handlePay = async () => {
-    if (paying || paid) return;
-    setPaying(true);
-    setError('');
-    try {
-      const res = await api.payOrder(data.orderId);
-      if (res.success) {
-        setPaid(true);
-      } else {
-        setError(res.error?.message || '支付失败');
-      }
-    } catch (err: any) {
-      setError(err.message || '支付失败，请重试');
-    }
-    setPaying(false);
+  const handlePay = () => {
+    onAction?.('pay', { orderId: data.orderId, orderNo: data.orderNo });
   };
 
   return (
@@ -31,11 +11,11 @@ export function PaymentCard({ data, onAction }: { data: any; onAction?: (action:
         <div className="flex items-center justify-between">
           <h4 className="text-[13px] font-semibold text-txt">确认订单</h4>
           <span className={`rounded-full px-2.5 py-[3px] text-[11px] font-bold ${
-            paid ? 'bg-success-light text-success' :
+            data.status === '已支付' ? 'bg-success-light text-success' :
             data.status === '待支付' ? 'bg-warning-light text-warning' :
             'bg-brand-light text-brand'
           }`}>
-            {paid ? '已支付' : data.status || '待支付'}
+            {data.status || '待支付'}
           </span>
         </div>
       </div>
@@ -83,23 +63,17 @@ export function PaymentCard({ data, onAction }: { data: any; onAction?: (action:
           </div>
         )}
 
-        {/* Error */}
-        {error && (
-          <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{error}</div>
-        )}
-
         {/* Pay button */}
-        {!paid && (
+        {(data.status === '待支付' || !data.status) && (
           <button
             onClick={handlePay}
-            disabled={paying}
-            className="w-full rounded-xl bg-brand py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-brand-dark disabled:opacity-50"
+            className="w-full rounded-xl bg-brand py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-brand-dark"
           >
-            {paying ? '支付中...' : `立即支付 $${data.totalAmount?.toFixed(2)}`}
+            立即支付 ${data.totalAmount?.toFixed(2)}
           </button>
         )}
 
-        {paid && (
+        {data.status === '已支付' && (
           <div className="flex items-center justify-center gap-2 rounded-xl bg-success-light py-2.5 text-[14px] font-bold text-success">
             <span>✓</span>
             <span>支付成功</span>

@@ -120,6 +120,10 @@ class ApiClient {
     return this.request<any>(`/orders/${id}`);
   }
 
+  async payOrder(id: string) {
+    return this.request<any>(`/orders/${id}/pay`, { method: 'POST' });
+  }
+
   // Chat
   async listConversations() {
     return this.request<any>('/chat/conversations');
@@ -201,22 +205,6 @@ class ApiClient {
     return this.request<any>('/webhooks/mock/payment-complete', {
       method: 'POST',
       body: { orderNo },
-    });
-  }
-
-  // 订单操作
-  async payOrder(orderId: string) {
-    return this.request<any>(`/orders/${orderId}/pay`, { method: 'POST' });
-  }
-
-  async cancelOrder(orderId: string) {
-    return this.request<any>(`/orders/${orderId}/cancel`, { method: 'POST' });
-  }
-
-  async confirmPickup(orderId: string, code: string) {
-    return this.request<any>(`/orders/${orderId}/confirm-pickup`, {
-      method: 'POST',
-      body: { code },
     });
   }
 
