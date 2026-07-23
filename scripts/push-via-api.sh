@@ -139,11 +139,10 @@ for COMMIT_SHA in "${COMMITS[@]}"; do
   for filepath in "${CHANGED_FILES[@]}"; do
     CONTENT_B64=$(git show "$COMMIT_SHA:$filepath" | base64 -w0)
     PAYLOAD_FILE=$(mktemp)
-    echo "$CONTENT_B64" | python3 -c "
+    python3 -c "
 import json,sys
-content = sys.stdin.read().strip()
-print(json.dumps({'content': content, 'encoding': 'base64'}))
-" > "$PAYLOAD_FILE"
+print(json.dumps({'content': sys.argv[1], 'encoding': 'base64'}))
+" "$CONTENT_B64" > "$PAYLOAD_FILE"
     BLOB_SHA=$(curl -s -X POST "${AUTH[@]}" "$API/git/blobs" -d @"$PAYLOAD_FILE" \
       | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sha',''))")
     rm -f "$PAYLOAD_FILE"
