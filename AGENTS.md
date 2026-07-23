@@ -170,45 +170,86 @@
 
 ## 9. Git 工作流（重要）
 
-### 9.1 禁止使用 git push / git pull
+### 9.1 禁止使用 git push / git pull / git clone
 本机 git 的 GnuTLS 存在 SSL 握手问题，无法直接通过 HTTPS 访问 GitHub。**必须使用 API 脚本替代**。
 
-### 9.2 推送代码
+### 9.2 Token 配置
 ```bash
-export GITHUB_TOKEN=github_pat_xxx   # 首次使用需设置
-./scripts/push-via-api.sh            # 推送 main 分支
-./scripts/push-via-api.sh develop    # 推送指定分支
+# Token 存储在本项目 .env.token（已加入 .gitignore）
+source /var/projects/ai-buy-world/.env.token
+# 或直接 export GITHUB_TOKEN=github_pat_xxx
+```
+
+### 9.3 共享脚本（跨项目通用）
+脚本位于 `/var/projects/scripts/`，自动从 `git remote get-url origin` 读取 repo 信息，可在任意 GitHub 仓库中使用：
+
+| 脚本 | 用途 | 用法 |
+|------|------|------|
+| `clone-via-api.sh` | 克隆仓库 | `clone-via-api.sh <owner/repo> [目标目录] [分支]` |
+| `pull-via-api.sh` | 拉取更新 | `pull-via-api.sh [分支]`（在仓库目录内执行） |
+| `push-via-api.sh` | 推送提交 | `push-via-api.sh [分支]`（在仓库目录内执行） |
+
+### 9.4 克隆新仓库
+```bash
+source /var/projects/ai-buy-world/.env.token
+
+# 克隆到指定目录
+/var/projects/scripts/clone-via-api.sh AStockD/stock-media-ai-bot /var/projects/stock-media-ai-bot
+
+# 克隆到当前目录（目录名 = repo 名）
+/var/projects/scripts/clone-via-api.sh AStockD/stock-media-ai-bot
+
+# 指定分支
+/var/projects/scripts/clone-via-api.sh AStockD/stock-media-ai-bot /var/projects/stock-media-ai-bot develop
+```
+- 通过 GitHub API 下载所有文件
+- 自动 `git init` + 设置 `remote origin`
+- 创建初始提交
+
+### 9.5 推送代码
+```bash
+cd /var/projects/ai-buy-world   # 在仓库目录内
+source /var/projects/ai-buy-world/.env.token
+/var/projects/scripts/push-via-api.sh            # 推送 main 分支
+/var/projects/scripts/push-via-api.sh develop    # 推送指定分支
 ```
 - 自动检测本地与远程的差异
 - 通过 GitHub Git Data API 逐个提交推送
-- 保持完整的提交历史
+- 大文件通过 stdin 传递 base64，避免命令行参数溢出
 
-### 9.3 拉取代码
+### 9.6 拉取代码
 ```bash
-export GITHUB_TOKEN=github_pat_xxx   # 首次使用需设置
-./scripts/pull-via-api.sh            # 拉取 main 分支
-./scripts/pull-via-api.sh develop    # 拉取指定分支
+cd /var/projects/ai-buy-world   # 在仓库目录内
+source /var/projects/ai-buy-world/.env.token
+/var/projects/scripts/pull-via-api.sh            # 拉取 main 分支
+/var/projects/scripts/pull-via-api.sh develop    # 拉取指定分支
 ```
 - 通过 GitHub API 获取远程更新
-- 通过 tree SHA 匹配检测等价提交
+- 通过文件级比较（path|blob_sha）检测差异
 - 自动下载变更文件并创建本地提交
 
-### 9.4 完整工作流
+### 9.7 完整工作流
 ```bash
-# 1. 拉取最新
-./scripts/pull-via-api.sh
+# 1. 设置 token
+source /var/projects/ai-buy-world/.env.token
 
-# 2. 开发、修改代码...
+# 2. 拉取最新
+/var/projects/scripts/pull-via-api.sh
 
-# 3. 本地提交
+# 3. 开发、修改代码...
+
+# 4. 本地提交
 git add <files>
 git commit -m "feat: xxx"
 
-# 4. 推送到 GitHub
-./scripts/push-via-api.sh
+# 5. 推送到 GitHub
+/var/projects/scripts/push-via-api.sh
 ```
 
-### 9.5 部署流程
+### 9.8 项目内脚本
+本项目 `scripts/` 目录下还保留了项目专属版本（硬编码 `AStockD/ai-buy-world`），以及通用版本（`*-generic.sh`）。日常使用推荐 `/var/projects/scripts/` 下的共享脚本。
+
+### 9.9 部署流程
 ```bash
 # 重建并部署
 docker compose build server web
