@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useChatStore } from '../lib/store-chat';
 import { useAuthStore } from '../lib/store-auth';
 import { getCardComponent } from '../lib/card-registry';
-import { api } from '../lib/api';
 import { Sidebar } from './Sidebar';
 import { Drawer } from './Drawer';
 
@@ -140,26 +139,15 @@ export function ChatPage() {
                       <CardRenderer
                         type={card.type}
                         data={card.data}
-                        onAction={async (action, payload) => {
+                        onAction={(action, payload) => {
                           if (isStreaming) return;
-
-                          // 支付动作直接调用 API
-                          if (action === 'pay' && payload?.orderId) {
-                            try {
-                              await api.payOrder(payload.orderId);
-                              sendMessage(`订单 ${payload.orderNo || ''} 已支付成功`);
-                            } catch (err: any) {
-                              sendMessage(`支付失败：${err.message || '请稍后重试'}`);
-                            }
-                            return;
-                          }
-
                           const pid = payload?.productId ? ` [productId:${payload.productId}]` : '';
                           const addressId = typeof payload === 'string' ? payload : payload?.addressId;
                           const aid = addressId ? ` [addressId:${addressId}]` : '';
                           const actionMessages: Record<string, string> = {
                             wishlist: `把这个商品加入心愿单${pid}`,
                             buy: `帮我下单${pid}`,
+                            pay: '确认支付',
                             select_address: `选择地址${aid}`,
                             confirm_address: `确认使用地址${aid}`,
                             add_new_address: '我要添加一个新的收货地址',
