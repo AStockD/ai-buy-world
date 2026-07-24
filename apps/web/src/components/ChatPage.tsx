@@ -229,6 +229,9 @@ export function ChatPage() {
               <Chip icon="📦" label="查看订单" onClick={() => !isStreaming && sendMessage('查看我的订单')} />
               <Chip icon="⭐" label="好物推荐" onClick={() => !isStreaming && sendMessage('有什么推荐')} />
               <Chip icon="✈️" label="计算运费" onClick={() => !isStreaming && sendMessage('运费怎么算')} />
+              <Chip icon="🔗" label="淘宝测试" onClick={() => !isStreaming && sendMessage('https://item.taobao.com/item.htm?id=623675070331')} />
+              <Chip icon="🔗" label="京东测试" onClick={() => !isStreaming && sendMessage('https://item.jd.com/100056338181.html')} />
+              <Chip icon="🔗" label="1688测试" onClick={() => !isStreaming && sendMessage('https://detail.1688.com/offer/1031641480452.html')} />
             </div>
 
             {/* Input Box */}
