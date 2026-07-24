@@ -1,15 +1,8 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { z } from 'zod';
-import { decryptConfig } from './crypto.js';
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-
-// Decrypt sensitive values if ENCRYPTION_KEY is set
-const encryptionKey = process.env.ENCRYPTION_KEY;
-if (encryptionKey) {
-  process.env = { ...process.env, ...decryptConfig(process.env as Record<string, string>, encryptionKey) };
-}
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(3001),
@@ -19,10 +12,8 @@ const envSchema = z.object({
   REDIS_URL: z.string().default('redis://localhost:6379'),
 
   JWT_SECRET: z.string().default('dev-jwt-secret-change-in-production'),
-  JWT_ACCESS_EXPIRY: z.string().default('30d'),
-  JWT_REFRESH_EXPIRY: z.string().default('365d'),
-
-  ENCRYPTION_KEY: z.string().optional(),
+  JWT_ACCESS_EXPIRY: z.string().default('15m'),
+  JWT_REFRESH_EXPIRY: z.string().default('7d'),
 
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
@@ -31,10 +22,8 @@ const envSchema = z.object({
   FLYLINK_API_KEY: z.string().default(''),
   FLYLINK_WEBHOOK_SECRET: z.string().default(''),
 
-  OPENAI_API_URL: z.string().default('https://api.openai.com/v1'),
   OPENAI_API_KEY: z.string().default(''),
   OPENAI_MODEL: z.string().default('gpt-4o'),
-  INTENT_MODEL: z.string().default('gpt-4o-mini'),
 
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
 });
@@ -65,11 +54,9 @@ export const config = {
     apiKey: parsed.data.FLYLINK_API_KEY,
     webhookSecret: parsed.data.FLYLINK_WEBHOOK_SECRET,
   },
-  llm: {
-    apiUrl: parsed.data.OPENAI_API_URL,
+  openai: {
     apiKey: parsed.data.OPENAI_API_KEY,
     model: parsed.data.OPENAI_MODEL,
-    intentModel: parsed.data.INTENT_MODEL,
   },
   corsOrigin: parsed.data.CORS_ORIGIN,
 };
