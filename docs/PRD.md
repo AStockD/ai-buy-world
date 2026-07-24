@@ -335,17 +335,26 @@ HiGoBuy
 
 ### 3.7 社区好物推荐
 
-**概述**：基于目的国（如美国）华人社区的真实购买数据，生成周度热购榜单。推荐商品已完成 Flylink 转化，显示本地化价格（USD），可直接购买。
+**概述**：基于多维度数据生成热购榜单，推荐商品已完成 Flylink 转化，显示本地化价格（USD），可直接购买。
+
+**推荐来源**：
+
+| 来源 | 说明 | 标签示例 |
+|------|------|----------|
+| 订单历史数据 | 基于平台真实成交订单统计，按区域/品类聚合 | "本周 483 人购买"、"美西热购 TOP10" |
+| 周边买家推荐 | 同区域/同社区买家的购买行为，社交化推荐 | "Rowland Heights 邻居都在买"、"您附近 12 人购买" |
+| 平台推荐 | 运营精选、季节爆款、节日礼品等人工+算法混合推荐 | "编辑精选"、"夏季必备"、"送礼首选" |
+| 个人购买喜好 | 基于用户浏览/收藏/购买历史的个性化推荐 | "根据您的喜好"、"与您购买过的 XX 相似" |
 
 **展示形式**：
-- 2×2 网格卡片布局
+- 2×2 网格卡片布局，支持按来源筛选/切换
 - 每个商品卡片：图片 + 名称 + 本地化价格 + 原价 + 热度标签
-- 热度标签类型：购买人数、区域热购、社区推荐、送礼首选等
+- 热度标签类型：购买人数、区域热购、社区推荐、送礼首选、个性化推荐等
 - 底部注明"本周真实购买数据"
 
 **交互**：
 - 点击商品卡片 → 直接进入购买流程（地址选择 → 代他人收货 → 支付）
-- "查看全部" → 展开完整榜单
+- "查看全部" → 展开完整榜单，支持按来源筛选
 - 侧边栏快捷入口
 
 ---
@@ -758,7 +767,7 @@ R_now  = 7.05（当前市场汇率）
 | sourceCurrency | string | 源币种（如 CNY） |
 | exchangeRate | decimal | 下单时汇率（快照） |
 | paymentMethod | enum | 信用卡/PayPal/Zelle/ApplePay |
-| homeAddress | Address | **用户家庭地址（结构化快照），见 6.14** |
+| homeAddress | Address | **用户家庭地址（结构化快照），见 6.15** |
 | deliveryBatchId | string | **所属集运批次 ID，关联 DeliveryBatch** |
 | willingToReceiveForOthers | boolean | **下单时用户是否选择"愿意代他人收货"** |
 | pickupCode | string | **取件码（批次到达提货地址后生成，用户凭此取件）** |
@@ -775,7 +784,7 @@ R_now  = 7.05（当前市场汇率）
 | id | string | 批次 ID（如 US-260715，即美国 7月15日批次） |
 | region | string | 目的国/地区代码（如 US） |
 | area | string | 批次覆盖的区域名称（如 "Rowland Heights"） |
-| pickupAddress | Address | **提货地址（某位代收人的家庭地址，结构化，见 6.14）** |
+| pickupAddress | Address | **提货地址（某位代收人的家庭地址，结构化，见 6.15）** |
 | pickupContactName | string | **代收人姓名** |
 | pickupContactPhone | string | **代收人联系电话** |
 | pickupUserId | string | **代收人用户 ID（该地址的住户）** |
@@ -834,20 +843,43 @@ R_now  = 7.05（当前市场汇率）
 | addedAt | datetime | 加入时间 |
 | status | enum | 待购/已购/已移除 |
 
-### 6.6 用户 (User)
+### 6.6 推荐商品 (Recommendation)
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | string | 推荐条目 ID |
+| productId | string | 商品 ID（关联 Product） |
+| source | enum | **推荐来源：order_history / nearby_buyers / platform / personal** |
+| region | string | 推荐适用的目标区域（如 "US-West"） |
+| hotScore | int | 热度评分（基于购买量、浏览量等加权计算） |
+| hotLabel | string | 热度标签文案（如 "本周 483 人购买"、"Rowland Heights 邻居都在买"） |
+| rank | int | 榜单排名 |
+| periodStart | date | 榜单周期开始日期 |
+| periodEnd | date | 榜单周期结束日期 |
+| metadata | json | 扩展信息（如附近买家数量、个性化匹配度等） |
+| createdAt | datetime | 创建时间 |
+| updatedAt | datetime | 更新时间 |
+
+**推荐来源说明**：
+- `order_history`：基于平台成交订单聚合统计
+- `nearby_buyers`：基于同区域/社区买家行为
+- `platform`：运营精选 + 算法混合推荐
+- `personal`：基于用户浏览/收藏/购买历史的个性化推荐
+
+### 6.7 用户 (User)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | id | string | 用户 ID |
 | name | string | 用户名 |
 | region | string | 所在国家/地区代码（如 US） |
-| homeAddress | Address | **默认家庭地址（结构化，见 6.14 全球地址系统）** |
+| homeAddress | Address | **默认家庭地址（结构化，见 6.15 全球地址系统）** |
 | homeAddresses | Address[] | **家庭地址簿（用户管理）** |
 | willingToReceiveForOthers | boolean | **是否愿意代他人收货（全局默认值，下单时可单独覆盖）** |
 | receiveForOthersCount | int | 历史累计代收次数（用于系统选择代收人时排序） |
 | receiveForOthersRating | decimal | 代收服务评分（其他用户提货后评价） |
 
-### 6.7 对话 (Conversation)
+### 6.8 对话 (Conversation)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -858,7 +890,7 @@ R_now  = 7.05（当前市场汇率）
 | createdAt | datetime | 创建时间 |
 | updatedAt | datetime | 最后更新时间 |
 
-### 6.8 集采购单 (PurchaseOrder)
+### 6.9 集采购单 (PurchaseOrder)
 
 集采购单由心愿单"一键下单"或同批次多个订单合并产生，代表买手的一次统一采购任务。
 
@@ -873,7 +905,7 @@ R_now  = 7.05（当前市场汇率）
 | createdAt | datetime | 创建时间 |
 | updatedAt | datetime | 更新时间 |
 
-### 6.9 买手 (Buyer)
+### 6.10 买手 (Buyer)
 
 买手是平台在国内的采购代理人，负责接收集采单并代为采购商品。
 
@@ -890,7 +922,7 @@ R_now  = 7.05（当前市场汇率）
 | status | enum | 在线/离线/暂停 |
 | createdAt | datetime | 创建时间 |
 
-### 6.10 支付交易 (Transaction)
+### 6.11 支付交易 (Transaction)
 
 每笔支付对应一条交易记录，记录完整的支付生命周期。
 
@@ -909,7 +941,7 @@ R_now  = 7.05（当前市场汇率）
 | refundedAt | datetime | 退款时间（如有） |
 | createdAt | datetime | 创建时间 |
 
-### 6.11 社区返佣 (ReferralCommission)
+### 6.12 社区返佣 (ReferralCommission)
 
 用户分享商品链接，好友通过链接下单后，推荐人获得返佣奖励。
 
@@ -926,7 +958,7 @@ R_now  = 7.05（当前市场汇率）
 | settledAt | datetime | 结算时间 |
 | createdAt | datetime | 创建时间 |
 
-### 6.12 通知 (Notification)
+### 6.13 通知 (Notification)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -941,7 +973,7 @@ R_now  = 7.05（当前市场汇率）
 | isRead | boolean | 是否已读 |
 | createdAt | datetime | 创建时间 |
 
-### 6.13 实体关系图
+### 6.14 实体关系图
 
 ```
 User 1 ──── * Order              (用户有多个订单)
@@ -955,6 +987,7 @@ User 1 ──── * ReferralCommission (用户可作为推荐人获得返佣)
 Product 1 ──── * ProductPricing  (同一商品，每个目的国一条定价)
 Product 1 ──── * Order           (同一商品可被多次购买)
 Product 1 ──── * Wishlist
+Product 1 ──── * Recommendation  (同一商品可出现在多个推荐来源)
 
 ProductPricing 1 ──── * Order    (定价快照关联)
 DeliveryBatch 1 ──── * Order     (一个批次包含多个订单)
@@ -986,16 +1019,16 @@ Order 1 ──── 0..1 ReferralCommission (订单可触发返佣)
 Order (持有 homeAddress + deliveryBatchId + pickupCode)
 ```
 
-### 6.14 全球地址系统
+### 6.15 全球地址系统
 
-#### 6.14.1 设计目标
+#### 6.15.1 设计目标
 
 系统需兼容全球主流地址格式，支持有邮编国家和无邮编国家，并能用于：
 - 用户填写/编辑地址时的表单适配与校验
 - 集运批次匹配（决定推荐用户加入哪个批次）
 - 末端配送的地理编码与路径规划
 
-#### 6.14.2 Address 通用数据结构
+#### 6.15.2 Address 通用数据结构
 
 所有地址（家庭地址、提货地址、订单地址快照）统一使用以下结构：
 
@@ -1043,7 +1076,7 @@ Order (持有 homeAddress + deliveryBatchId + pickupCode)
 | isDefault | boolean | 否 | 是否默认地址 |
 | label | string | 否 | 用户自定义标签（如"家"、"公司"） |
 
-#### 6.14.3 国家级地址格式配置 (AddressFormat)
+#### 6.15.3 国家级地址格式配置 (AddressFormat)
 
 每个国家/地区对应一条格式配置，定义该国的地址字段规则。参考 Google libaddressformat 标准设计。
 
@@ -1098,7 +1131,7 @@ Order (持有 homeAddress + deliveryBatchId + pickupCode)
 | 阿联酋 | AE | 无邮编 | 依赖 landmark + phone 辅助定位 |
 | 中国 | CN | 6位数字 | adminArea1 = 省, adminArea2 = 市, adminArea3 = 区 |
 
-#### 6.14.4 地址处理流程
+#### 6.15.4 地址处理流程
 
 ```
 用户输入地址
@@ -1116,7 +1149,7 @@ Order (持有 homeAddress + deliveryBatchId + pickupCode)
 集运批次匹配：postalCode 区域匹配 → coordinates 距离匹配 → adminArea 兜底
 ```
 
-#### 6.14.5 无邮编国家的处理策略
+#### 6.15.5 无邮编国家的处理策略
 
 对于阿联酋等无邮编体系的国家：
 
@@ -1127,7 +1160,7 @@ Order (持有 homeAddress + deliveryBatchId + pickupCode)
 | coordinates 必填 | 地理编码必须成功，否则无法匹配集运批次 |
 | 批次匹配降级 | 跳过 postalCode 匹配，直接用 coordinates 距离 + adminArea 匹配批次 |
 
-#### 6.14.6 地址与集运批次匹配算法
+#### 6.15.6 地址与集运批次匹配算法
 
 ```
 输入：用户家庭地址 Address
@@ -1151,7 +1184,7 @@ Step 5: 同优先级内，按批次实时数据排序：
 输出：推荐批次列表（最多 3 个），每个含提货地址和代收人信息
 ```
 
-### 6.15 多币种查询示例
+### 6.16 多币种查询示例
 
 **场景**：Nike Air Force 1 分别面向美国和加拿大用户
 
