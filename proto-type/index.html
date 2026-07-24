@@ -2580,7 +2580,7 @@ function renderWillingCard() {
         <div class="willing-content">
           <div class="willing-title">✅ 愿意 — 我的地址可能成为社区提货点</div>
           <div class="willing-desc">当我的地址被选为批次提货点时，我可以代收整批包裹，其他用户前来取件。</div>
-          <div class="willing-reward">🎁 奖励：集运费 8 折 + 50 平台积分/次</div>
+          <div class="willing-reward">🎁 奖励：集运费 8 折</div>
         </div>
       </div>
       <div class="willing-option" id="willing-no" onclick="selectWilling('no')">
@@ -2606,7 +2606,7 @@ function selectWilling(choice) {
     renderTyping();
     setTimeout(() => {
       if (choice === 'yes') {
-        renderAIMsg('<p>感谢您的热心！🎉 您的偏好已更新。</p><p>作为回报，您下次集运可享 <strong>8 折运费</strong> + <strong>50 积分</strong>奖励。</p>');
+        renderAIMsg('<p>感谢您的热心！🎉 您的偏好已更新。</p><p>作为回报，您下次集运可享 <strong>8 折运费</strong> 优惠。</p>');
       } else {
         renderAIMsg('<p>好的，已为您设置。包裹将直接配送到您的地址。</p>');
       }
