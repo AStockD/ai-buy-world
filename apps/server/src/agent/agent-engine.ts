@@ -69,12 +69,15 @@ export class AgentEngine {
     if (sCtx.selectedBatch) ctxParts.push(`已选批次: ${sCtx.selectedBatch.area}`);
     if (sCtx.currentOrder) ctxParts.push(`当前订单: ${sCtx.currentOrder.orderNo}`);
     if (sCtx.willingToReceiveForOthers !== undefined) ctxParts.push(`代他人收货: ${sCtx.willingToReceiveForOthers ? '愿意' : '不愿意'}`);
-    if (sCtx.pendingAction) ctxParts.push(`⚠️ 待完成操作: ${sCtx.pendingAction}（用户上一轮操作因缺少前置条件而中断，现在前置条件已满足，请立即调用对应工具完成操作）`);
+    if (sCtx.pendingAction) ctxParts.push(`⚠️ 待完成操作: 需要继续完成${sCtx.pendingAction}（用户上一轮操作因缺少前置条件而中断，现在前置条件已满足，请立即继续）`);
 
     if (ctxParts.length > 0) {
       let systemHint = `[当前会话状态: ${sessionState.state}]\n${ctxParts.join('\n')}\n\n用户提到"这个商品"或要求加入心愿单/下单时，请直接使用上述商品ID调用对应工具，无需再询问用户。`;
       if (sCtx.pendingAction === 'create_order_after_address') {
         systemHint += `\n\n重要：用户刚提供了收货地址，请立即调用 manage_address（action=add）保存地址，然后调用 create_order 完成下单。不要只回复文字确认，必须调用工具。`;
+      }
+      if (sCtx.pendingAction === 'create_order_after_address_select') {
+        systemHint += `\n\n重要：用户刚选择了收货地址。消息中 [addressId:xxx] 部分就是地址ID。请立即调用 create_order 工具，将 addressId 参数设为该ID，完成下单。不要调用其他工具名。`;
       }
       messages.unshift({
         role: 'system' as const,
