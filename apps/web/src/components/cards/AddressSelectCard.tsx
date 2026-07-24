@@ -1,13 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-
 export function AddressSelectCard({ data, onAction }: { data: any; onAction?: (action: string, payload?: any) => void }) {
   const addresses = data.addresses || [];
-  const [selectedId, setSelectedId] = useState(data.selectedId || addresses[0]?.id);
+  const selectedId = data.selectedId;
 
   const handleSelect = (id: string) => {
-    setSelectedId(id);
+    onAction?.('select_address', id);
   };
 
   if (addresses.length === 0) {
@@ -18,10 +16,7 @@ export function AddressSelectCard({ data, onAction }: { data: any; onAction?: (a
         </div>
         <div className="p-4 text-center">
           <p className="mb-3 text-sm text-txt-muted">暂无收货地址</p>
-          <button
-            onClick={() => onAction?.('add_new_address')}
-            className="rounded-xl bg-brand px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark"
-          >
+          <button className="rounded-xl bg-brand px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark">
             添加新地址
           </button>
         </div>
@@ -65,17 +60,8 @@ export function AddressSelectCard({ data, onAction }: { data: any; onAction?: (a
         })}
       </div>
       <div className="border-t border-border px-4 py-2.5">
-        <button
-          onClick={() => onAction?.('confirm_address', selectedId)}
-          className="w-full rounded-xl bg-brand py-2 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark"
-        >
+        <button className="w-full rounded-xl bg-brand py-2 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark">
           确认地址
-        </button>
-        <button
-          onClick={() => onAction?.('add_new_address')}
-          className="mt-2 w-full rounded-xl border border-border py-2 text-[13px] text-txt-muted transition-colors hover:border-brand hover:text-brand"
-        >
-          添加新地址
         </button>
       </div>
     </div>

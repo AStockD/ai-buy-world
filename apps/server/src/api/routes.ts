@@ -6,6 +6,8 @@ import { wishlistRoutes } from './wishlist.routes.js';
 import { orderRoutes } from './order.routes.js';
 import { chatRoutes } from './chat.routes.js';
 import { notificationRoutes } from './notification.routes.js';
+import { webhookRoutes } from './webhook.routes.js';
+import { batchRoutes } from './batch.routes.js';
 
 export async function registerRoutes(app: FastifyInstance) {
   // 认证路由（公开）
@@ -29,6 +31,9 @@ export async function registerRoutes(app: FastifyInstance) {
   // 通知（需认证）
   await app.register(notificationRoutes, { prefix: '/api/notifications' });
 
-  // 后续迭代逐步注册
-  // app.register(webhookRoutes, { prefix: '/api/webhooks' });
+  // Webhook（公开，签名验证）
+  await app.register(webhookRoutes, { prefix: '/api/webhooks' });
+
+  // 集运批次（需认证）
+  await app.register(batchRoutes, { prefix: '/api/batches' });
 }

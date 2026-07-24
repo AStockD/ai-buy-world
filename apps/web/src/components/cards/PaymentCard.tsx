@@ -2,7 +2,7 @@
 
 export function PaymentCard({ data, onAction }: { data: any; onAction?: (action: string, payload?: any) => void }) {
   const handlePay = () => {
-    onAction?.('pay', { orderId: data.orderId, orderNo: data.orderNo });
+    onAction?.('pay');
   };
 
   return (

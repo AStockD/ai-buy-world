@@ -10,8 +10,6 @@ export default function SettingsPage() {
   const [language, setLanguage] = useState('zh-CN');
   const [notifyEnabled, setNotifyEnabled] = useState(true);
 
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
   const handleLogout = () => {
     logout();
     router.push('/');
@@ -83,45 +81,13 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Logout — visually separated to prevent accidental clicks */}
-        <div className="mt-10 border-t border-border pt-6">
-          <button
-            onClick={() => setShowLogoutConfirm(true)}
-            className="w-full rounded-xl py-3 text-[13px] text-txt-muted transition-colors hover:text-danger"
-          >
-            退出登录
-          </button>
-        </div>
-
-        {/* Logout Confirmation */}
-        {showLogoutConfirm && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => setShowLogoutConfirm(false)}>
-            <div
-              className="w-full max-w-[760px] rounded-t-2xl bg-surface p-5 pb-[env(safe-area-inset-bottom)]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="mb-4 text-center">
-                <div className="mb-2 text-3xl">👋</div>
-                <h3 className="text-[15px] font-semibold text-txt">确认退出登录？</h3>
-                <p className="mt-1 text-[12px] text-txt-muted">退出后需要重新登录才能使用</p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 rounded-xl border border-border bg-surface py-3 text-[13px] font-medium text-txt transition-colors hover:bg-surface-2"
-                >
-                  取消
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="flex-1 rounded-xl bg-danger py-3 text-[13px] font-medium text-white transition-colors hover:bg-danger/90"
-                >
-                  确认退出
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="w-full rounded-xl border border-danger/30 bg-danger/5 py-3 text-[13px] font-semibold text-danger transition-colors hover:bg-danger/10"
+        >
+          退出登录
+        </button>
       </div>
     </div>
   );

@@ -5,6 +5,10 @@ export interface ConversationContext {
   currentProduct?: { productId: string; name: string };
   selectedSku?: { skuId: string; specs: Record<string, string> } | null;
   pendingAction?: string;
+  currentOrder?: { orderId: string; orderNo: string };
+  selectedAddress?: { addressId: string; formatted: string };
+  selectedBatch?: { batchId: string; area: string };
+  willingToReceiveForOthers?: boolean;
 }
 
 export interface SessionState {

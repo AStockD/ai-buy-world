@@ -191,6 +191,19 @@ class ApiClient {
     return this.request<any>(`/chat/conversations/${id}`, { method: 'DELETE' });
   }
 
+  // Batches
+  async getBatchRecommendations() {
+    return this.request<any>('/batches/recommend');
+  }
+
+  // Mock payment (for testing)
+  async mockPaymentComplete(orderNo: string) {
+    return this.request<any>('/webhooks/mock/payment-complete', {
+      method: 'POST',
+      body: { orderNo },
+    });
+  }
+
   // Notifications
   async listNotifications(unreadOnly = false) {
     return this.request<any>(`/notifications?unread_only=${unreadOnly}`);

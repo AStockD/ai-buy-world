@@ -3,22 +3,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../lib/store-chat';
 import { useAuthStore } from '../lib/store-auth';
+import { getCardComponent } from '../lib/card-registry';
 import { Sidebar } from './Sidebar';
 import { Drawer } from './Drawer';
-import { ProductCard } from './cards/ProductCard';
-import { OrderCard } from './cards/OrderCard';
-import { WishlistCard } from './cards/WishlistCard';
-import { ShippingCard } from './cards/ShippingCard';
-import { AddressCard } from './cards/AddressCard';
-import { RecommendationCard } from './cards/RecommendationCard';
 
 export function ChatPage() {
   const { messages, isStreaming, sendMessage } = useChatStore();
   const user = useAuthStore((s) => s.user);
   const [input, setInput] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<Record<number, number>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleFeedback = (msgIndex: number, value: number) => {
+    setFeedbacks((prev) => ({ ...prev, [msgIndex]: prev[msgIndex] === value ? 0 : value }));
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -134,10 +134,44 @@ export function ChatPage() {
                   <p className="mb-2 last:mb-0 whitespace-pre-wrap">{msg.content}</p>
                   {msg.cards?.map((card, j) => (
                     <div key={j} className="mt-2">
-                      <CardRenderer type={card.type} data={card.data} />
+                      <CardRenderer
+                        type={card.type}
+                        data={card.data}
+                        onAction={(action, payload) => {
+                          const actionMessages: Record<string, string> = {
+                            wishlist: '把这个商品加入心愿单',
+                            buy: '帮我下单',
+                            pay: '确认支付',
+                            select_address: `选择地址 ${payload || ''}`,
+                            select_batch: `选择批次 ${payload || ''}`,
+                            willing_yes: '我愿意代他人收货',
+                            willing_no: '不太方便，还是算了',
+                          };
+                          const text = actionMessages[action];
+                          if (text) sendMessage(text);
+                        }}
+                      />
                     </div>
                   ))}
                 </div>
+                {msg.role === 'assistant' && msg.content && (
+                  <div className="mt-1 flex items-center gap-1 px-1">
+                    <button
+                      onClick={() => handleFeedback(i, 1)}
+                      className={`rounded p-1 text-xs transition-colors ${feedbacks[i] === 1 ? 'text-brand' : 'text-txt-muted hover:text-brand'}`}
+                      title="有帮助"
+                    >
+                      👍
+                    </button>
+                    <button
+                      onClick={() => handleFeedback(i, -1)}
+                      className={`rounded p-1 text-xs transition-colors ${feedbacks[i] === -1 ? 'text-danger' : 'text-txt-muted hover:text-danger'}`}
+                      title="没帮助"
+                    >
+                      👎
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
 
@@ -235,14 +269,10 @@ function Chip({ icon, label, onClick }: { icon: string; label: string; onClick: 
   );
 }
 
-function CardRenderer({ type, data }: { type: string; data: any }) {
-  switch (type) {
-    case 'product_card': return <ProductCard data={data} />;
-    case 'order_card': return <OrderCard data={data} />;
-    case 'wishlist_card': return <WishlistCard data={data} />;
-    case 'shipping_card': return <ShippingCard data={data} />;
-    case 'address_card': return <AddressCard data={data} />;
-    case 'recommendation_card': return <RecommendationCard data={data} />;
-    default: return <pre className="overflow-x-auto rounded-lg bg-surface-2 p-2 text-xs">{JSON.stringify(data, null, 2)}</pre>;
+function CardRenderer({ type, data, onAction }: { type: string; data: any; onAction?: (action: string, payload?: any) => void }) {
+  const Component = getCardComponent(type);
+  if (!Component) {
+    return <pre className="overflow-x-auto rounded-lg bg-surface-2 p-2 text-xs">{JSON.stringify(data, null, 2)}</pre>;
   }
+  return <Component data={data} onAction={onAction} />;
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export function ProductCard({ data }: { data: any }) {
+export function ProductCard({ data, onAction }: { data: any; onAction?: (action: string, payload?: any) => void }) {
   const currency = data.price?.currency === 'CNY' ? '¥' : '$';
   const origCurrency = data.price?.originalCurrency === 'CNY' ? '¥' : '';
   const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string>>({});
@@ -121,13 +121,24 @@ export function ProductCard({ data }: { data: any }) {
 
         {/* Actions */}
         <div className="flex gap-2">
-          <button className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark">
+          <button onClick={() => onAction?.('wishlist')} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark">
             ❤️ 加入心愿单
           </button>
-          <button className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-transparent px-3 py-2.5 text-[13px] font-semibold text-txt-2 transition-colors hover:border-brand hover:bg-brand-light hover:text-brand">
+          <button onClick={() => onAction?.('buy')} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-transparent px-3 py-2.5 text-[13px] font-semibold text-txt-2 transition-colors hover:border-brand hover:bg-brand-light hover:text-brand">
             直接购买
           </button>
         </div>
+        <button
+          onClick={() => {
+            const url = data.sourceUrl || data.flylinkUrl || '';
+            if (url && navigator.clipboard) {
+              navigator.clipboard.writeText(url);
+            }
+          }}
+          className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-border-light bg-surface-2 px-3 py-2 text-[11px] text-txt-muted transition-colors hover:border-brand hover:text-brand"
+        >
+          🔗 分享商品
+        </button>
       </div>
     </div>
   );
