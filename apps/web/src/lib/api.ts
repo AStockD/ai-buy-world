@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 interface RequestOptions {
   method?: string;
@@ -29,13 +29,7 @@ class ApiClient {
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
 
-    let data: any;
-    const contentType = res.headers.get('content-type') || '';
-    if (contentType.includes('application/json')) {
-      data = await res.json();
-    } else {
-      data = { error: { message: `HTTP ${res.status}` } };
-    }
+    const data = await res.json();
 
     if (!res.ok) {
       throw new Error(data.error?.message || `HTTP ${res.status}`);
@@ -79,7 +73,7 @@ class ApiClient {
   }
 
   async setDefaultAddress(id: string) {
-    return this.request<any>(`/addresses/${id}/default`, { method: 'PATCH' });
+    return this.request<any>(`/addresses/${id}/default`, { method: 'POST' });
   }
 
   // Products
@@ -120,10 +114,6 @@ class ApiClient {
     return this.request<any>(`/orders/${id}`);
   }
 
-  async payOrder(id: string) {
-    return this.request<any>(`/orders/${id}/pay`, { method: 'POST' });
-  }
-
   // Chat
   async listConversations() {
     return this.request<any>('/chat/conversations');
@@ -141,71 +131,8 @@ class ApiClient {
     return this.request<any>('/chat/message', { method: 'POST', body: { conversationId, content } });
   }
 
-  async streamMessage(
-    conversationId: string,
-    content: string,
-    onEvent: (event: string, data: any) => void,
-  ): Promise<void> {
-    const res = await fetch(`${API_BASE}/chat/stream`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
-      },
-      body: JSON.stringify({ conversationId, content }),
-    });
-
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({ error: { message: `HTTP ${res.status}` } }));
-      throw new Error(error.error?.message || `HTTP ${res.status}`);
-    }
-
-    const reader = res.body?.getReader();
-    if (!reader) throw new Error('No response body');
-
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      let currentEvent = 'message';
-      for (const line of lines) {
-        if (line.startsWith('event: ')) {
-          currentEvent = line.slice(7);
-        } else if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          try {
-            onEvent(currentEvent, JSON.parse(data));
-          } catch {
-            onEvent(currentEvent, data);
-          }
-          currentEvent = 'message';
-        }
-      }
-    }
-  }
-
   async deleteConversation(id: string) {
     return this.request<any>(`/chat/conversations/${id}`, { method: 'DELETE' });
-  }
-
-  // Batches
-  async getBatchRecommendations() {
-    return this.request<any>('/batches/recommend');
-  }
-
-  // Mock payment (for testing)
-  async mockPaymentComplete(orderNo: string) {
-    return this.request<any>('/webhooks/mock/payment-complete', {
-      method: 'POST',
-      body: { orderNo },
-    });
   }
 
   // Notifications

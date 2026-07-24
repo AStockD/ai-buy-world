@@ -1,22 +1,31 @@
-import type { Metadata, Viewport } from 'next';
-import './globals.css';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'AIBuyWorld - AI 跨境购物助手',
-  description: '海外华人跨境购物平台，AI 智能导购',
-  manifest: '/manifest.json',
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
-  themeColor: '#2563eb',
-};
+import { useEffect } from 'react';
+import { useAuthStore } from '../lib/store-auth';
+import { api } from '../lib/api';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const restore = useAuthStore((s) => s.restore);
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) api.setToken(token);
+    restore();
+  }, [restore]);
+
+  if (isLoading) {
+    return (
+      <html lang="zh-CN">
+        <body className="bg-gray-50">
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
+          </div>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="zh-CN">
       <body className="bg-gray-50 text-gray-900 antialiased">

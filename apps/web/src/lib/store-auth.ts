@@ -20,43 +20,6 @@ interface AuthState {
   restore: () => Promise<void>;
 }
 
-function getTokenExpiry(token: string): number {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.exp || 0;
-  } catch {
-    return 0;
-  }
-}
-
-function isTokenExpiringSoon(token: string, thresholdSeconds = 86400): boolean {
-  const exp = getTokenExpiry(token);
-  if (!exp) return false;
-  const now = Math.floor(Date.now() / 1000);
-  return (exp - now) < thresholdSeconds;
-}
-
-let refreshTimer: ReturnType<typeof setInterval> | null = null;
-
-function startPeriodicRefresh() {
-  if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(() => {
-    const token = localStorage.getItem('accessToken');
-    const refresh = localStorage.getItem('refreshToken');
-    if (token && refresh && isTokenExpiringSoon(token)) {
-      api.refresh(refresh).then((res) => {
-        api.setToken(res.data.accessToken);
-        localStorage.setItem('accessToken', res.data.accessToken);
-        localStorage.setItem('refreshToken', res.data.refreshToken);
-        useAuthStore.setState({
-          accessToken: res.data.accessToken,
-          refreshToken: res.data.refreshToken,
-        });
-      }).catch(() => {});
-    }
-  }, 10 * 60 * 1000);
-}
-
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   accessToken: null,
@@ -73,7 +36,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       accessToken: res.data.accessToken,
       refreshToken: res.data.refreshToken,
     });
-    startPeriodicRefresh();
   },
 
   register: async (email, password, name) => {
@@ -86,46 +48,27 @@ export const useAuthStore = create<AuthState>((set) => ({
       accessToken: res.data.accessToken,
       refreshToken: res.data.refreshToken,
     });
-    startPeriodicRefresh();
   },
 
   logout: () => {
-    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
     api.setToken(null);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     set({ user: null, accessToken: null, refreshToken: null });
-    window.location.href = '/';
   },
 
   restore: async () => {
     const token = localStorage.getItem('accessToken');
-    const refresh = localStorage.getItem('refreshToken');
     if (token) {
       try {
-        if (refresh && isTokenExpiringSoon(token)) {
-          const res = await api.refresh(refresh);
-          api.setToken(res.data.accessToken);
-          localStorage.setItem('accessToken', res.data.accessToken);
-          localStorage.setItem('refreshToken', res.data.refreshToken);
-          const meRes = await api.getMe();
-          set({
-            user: meRes.data,
-            accessToken: res.data.accessToken,
-            refreshToken: res.data.refreshToken,
-            isLoading: false,
-          });
-        } else {
-          api.setToken(token);
-          const res = await api.getMe();
-          set({
-            user: res.data,
-            accessToken: token,
-            refreshToken: refresh,
-            isLoading: false,
-          });
-        }
-        startPeriodicRefresh();
+        api.setToken(token);
+        const res = await api.getMe();
+        set({
+          user: res.data,
+          accessToken: token,
+          refreshToken: localStorage.getItem('refreshToken'),
+          isLoading: false,
+        });
       } catch {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
