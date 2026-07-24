@@ -111,28 +111,98 @@ NEXT_PUBLIC_API_URL=http://192.168.83.1:3004/api
 
 #### 加密敏感配置
 
-生产环境建议加密存储 API Key 等敏感信息：
+生产环境建议加密存储 API Key 等敏感信息。
+
+**加密原理**：
+- 算法：AES-256-GCM（对称加密 + 认证）
+- 密钥派生：PBKDF2（SHA-512, 100,000 次迭代, 32 字节密钥）
+- 每次加密生成随机 Salt（64 字节）+ IV（16 字节），同一明文每次加密结果不同
+- Salt 和 IV 存储在密文中（非秘密，但解密时必须参与运算）
+- GCM 认证标签（16 字节）用于校验数据完整性
+- 存储格式：`enc:<base64-salt>:<base64-iv>:<base64-tag>:<base64-ciphertext>`
+
+**加密工具**：`apps/server/src/scripts/encrypt-env.ts`
+
+**方法 1：使用 tsx 直接运行（推荐，无需编译）**
 
 ```bash
-# 1. 设置加密密钥
-export ENCRYPTION_KEY="your-secret-passphrase"
+# 从 .env.docker 读取当前加密密钥
+export ENCRYPTION_KEY=$(grep '^ENCRYPTION_KEY=' .env.docker | cut -d= -f2)
 
-# 2. 加密敏感值
-cd apps/server
-npm run build
-echo "FLYLINK_API_KEY=your-api-key" | node dist/scripts/encrypt-env.js
-echo "OPENAI_API_KEY=your-api-key" | node dist/scripts/encrypt-env.js
+# 加密单个值（格式：KEY=value）
+echo 'FLYLINK_API_KEY=your-new-api-key' | npx tsx apps/server/src/scripts/encrypt-env.ts
 
-# 3. 将输出的加密值填入 .env.docker
-FLYLINK_API_KEY=enc:salt:iv:tag:encrypted-data
-OPENAI_API_KEY=enc:salt:iv:tag:encrypted-data
+# 输出示例：
+# FLYLINK_API_KEY=enc:base64salt:base64iv:base64tag:base64ciphertext
 ```
 
-加密机制：
-- 算法：AES-256-GCM
-- 密钥派生：PBKDF2（100,000 次迭代）
-- 格式：`enc:salt:iv:tag:encrypted-data`（Base64 编码）
-- 运行时自动解密，无需手动操作
+**方法 2：批量加密多个值**
+
+```bash
+export ENCRYPTION_KEY=$(grep '^ENCRYPTION_KEY=' .env.docker | cut -d= -f2)
+
+npx tsx apps/server/src/scripts/encrypt-env.ts
+# 逐行输入 KEY=value 格式：
+# FLYLINK_API_KEY=sk-xxx
+# OPENAI_API_KEY=sk-yyy
+# （空行结束输入，输出所有加密结果）
+```
+
+**方法 3：编译后运行**
+
+```bash
+cd apps/server && npm run build
+echo 'FLYLINK_API_KEY=your-key' | ENCRYPTION_KEY=your-passphrase node dist/scripts/encrypt-env.js
+```
+
+**更新密钥的完整流程**：
+
+```bash
+# 1. 加密新值
+export ENCRYPTION_KEY=$(grep '^ENCRYPTION_KEY=' .env.docker | cut -d= -f2)
+echo 'FLYLINK_API_KEY=new-api-key-value' | npx tsx apps/server/src/scripts/encrypt-env.ts
+
+# 2. 编辑 .env.docker，将输出替换对应行
+# FLYLINK_API_KEY=enc:新salt:新iv:新tag:新ciphertext
+
+# 3. 重启 server 容器使配置生效
+docker compose restart server
+
+# 4. 验证
+docker logs abw-server | grep -i "decrypt\|error"
+```
+
+**运行时解密流程**：
+
+```
+.env.docker 加载 → dotenv 读取原始值
+       ↓
+  检测 enc: 前缀 → 用 ENCRYPTION_KEY + salt 派生密钥
+       ↓
+  AES-256-GCM 解密 → 用 iv 解密 + tag 校验完整性
+       ↓
+  Zod 校验 → 类型转换 + 默认值
+       ↓
+  export const config → 应用代码使用明文值
+```
+
+非 `enc:` 前缀的值原样返回，兼容明文配置（开发环境无需加密）。
+
+**更换 ENCRYPTION_KEY**：
+
+如果更换了 `ENCRYPTION_KEY` 本身，所有已加密的值都需要重新加密：
+
+```bash
+# 1. 先用旧密钥解密（手动或写脚本导出明文）
+# 2. 修改 .env.docker 中的 ENCRYPTION_KEY
+# 3. 用新密钥重新加密所有敏感值
+export ENCRYPTION_KEY="new-passphrase"
+echo 'FLYLINK_API_KEY=明文值' | npx tsx apps/server/src/scripts/encrypt-env.ts
+echo 'OPENAI_API_KEY=明文值' | npx tsx apps/server/src/scripts/encrypt-env.ts
+# 4. 将新加密值填入 .env.docker
+# 5. 重启服务
+docker compose restart server
+```
 
 ### 4.3 构建基础镜像
 

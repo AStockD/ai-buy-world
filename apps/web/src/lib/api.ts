@@ -124,6 +124,10 @@ class ApiClient {
     return this.request<any>(`/orders/${id}/pay`, { method: 'POST' });
   }
 
+  async cancelOrder(id: string) {
+    return this.request<any>(`/orders/${id}/cancel`, { method: 'POST' });
+  }
+
   // Chat
   async listConversations() {
     return this.request<any>('/chat/conversations');

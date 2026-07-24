@@ -13,6 +13,7 @@ export default function OrdersPage() {
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -32,9 +33,44 @@ export default function OrdersPage() {
     setLoading(false);
   };
 
+  const handlePay = async (order: any) => {
+    setActionLoading(order.id);
+    try {
+      const res = await api.payOrder(order.id);
+      if (res.success) {
+        loadOrders();
+      } else {
+        setError(res.error?.message || '支付失败');
+      }
+    } catch (err: any) {
+      setError(err.message || '支付失败');
+    }
+    setActionLoading(null);
+  };
+
+  const handleCancel = async (order: any) => {
+    setActionLoading(order.id);
+    try {
+      await api.cancelOrder(order.id);
+      loadOrders();
+    } catch (err: any) {
+      setError(err.message || '取消失败');
+    }
+    setActionLoading(null);
+  };
+
   if (!user) return null;
 
   const statuses = ['', '待支付', '集货中', '运输中', '待提货', '已提货'];
+
+  const STATUS_STYLE: Record<string, string> = {
+    '待支付': 'bg-warning-light text-warning',
+    '集货中': 'bg-brand-light text-brand',
+    '运输中': 'bg-blue-100 text-blue-600',
+    '待提货': 'bg-blue-100 text-blue-600',
+    '已提货': 'bg-success-light text-success',
+    '已取消': 'bg-gray-100 text-gray-500',
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-bg">
@@ -99,7 +135,7 @@ export default function OrdersPage() {
                   <div key={order.id} className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-txt-muted">{order.order_no}</span>
-                      <span className="rounded-full bg-brand-light px-2 py-0.5 text-xs font-medium text-brand">{order.status}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[order.status] || 'bg-brand-light text-brand'}`}>{order.status}</span>
                     </div>
                     {order.product && (
                       <div className="mt-3 flex gap-3">
@@ -115,6 +151,24 @@ export default function OrdersPage() {
                             </span>
                           </div>
                         </div>
+                      </div>
+                    )}
+                    {order.status === '待支付' && (
+                      <div className="mt-3 flex gap-2 border-t border-border pt-3">
+                        <button
+                          onClick={() => handlePay(order)}
+                          disabled={actionLoading === order.id}
+                          className="flex-1 rounded-xl bg-brand py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-dark disabled:opacity-50"
+                        >
+                          {actionLoading === order.id ? '处理中…' : `立即支付 $${Number(order.total_amount).toFixed(2)}`}
+                        </button>
+                        <button
+                          onClick={() => handleCancel(order)}
+                          disabled={actionLoading === order.id}
+                          className="rounded-xl border border-border px-4 py-2 text-sm text-txt-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
+                        >
+                          取消
+                        </button>
                       </div>
                     )}
                   </div>
