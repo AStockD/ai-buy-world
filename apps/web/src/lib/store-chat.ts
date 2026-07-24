@@ -97,7 +97,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set((s) => ({
             currentConversationId: data.conversationId,
             conversations: [{ id: data.conversationId, title: data.title || '新商品解析', created_at: new Date().toISOString(), updated_at: new Date().toISOString(), message_count: 0 }, ...s.conversations],
-            messages: s.messages.filter(m => m.role !== 'assistant' || m.content),
           }));
           return;
         }
