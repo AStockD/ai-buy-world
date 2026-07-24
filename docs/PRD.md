@@ -513,6 +513,104 @@ AI 需识别以下用户意图并触发对应流程：
 
 ---
 
+### 3.13 Flylink 集成架构
+
+#### 3.13.1 系统定位
+
+**核心原则**：Flylink 是电商后端，HiGoBuy 是对话式前端。MVP 阶段不重复建设订单管理系统，而是深度集成 Flylink 的电商能力。
+
+```
+┌─────────────────────────────────────────────────────┐
+│  HiGoBuy（对话式前端）                                │
+│  - 用户交互（对话、推荐、心愿单）                      │
+│  - 商品浏览/搜索                                      │
+│  - 用户画像/偏好                                      │
+│  - 订单展示（轻量引用）                               │
+└───────────────────┬─────────────────────────────────┘
+                    │ API
+┌───────────────────▼─────────────────────────────────┐
+│  Flylink（电商后端）                                  │
+│  - 商品转化（原始链接 → 平台商品）                     │
+│  - 订单管理（创建、支付、状态流转）                    │
+│  - 买手调度、集运、履约                               │
+│  - 支付处理                                           │
+└─────────────────────────────────────────────────────┘
+```
+
+#### 3.13.2 三种链接关系
+
+| 链接类型 | 说明 | 示例 |
+|----------|------|------|
+| **原始商品链接** | 来源平台（淘宝/京东）的商品 URL | `https://item.taobao.com/item.htm?id=xxx` |
+| **Flylink 商品链接** | Flylink 转化后的商品 URL，用于支付 | `https://flylink.com/product/xxx` |
+| **本平台商品链接** | HiGoBuy 内部商品标识（非 URL，用于展示和引用） | `product_id: "taobao_nike"` |
+
+**转化流程**：
+```
+用户粘贴原始链接
+    ↓
+调用 Flylink 商品转化 API
+    ↓
+Flylink 返回：商品信息 + flylinkProductId + flylinkUrl
+    ↓
+HiGoBuy 存储为 Product（缓存/投影）
+    ↓
+建立映射：Product.flylinkProductId ↔ flylinkUrl
+```
+
+#### 3.13.3 下单支付流程
+
+**方案：先本平台下单，再 Flylink 支付**
+
+```
+用户点击"立即购买"
+    ↓
+HiGoBuy 创建轻量 Order（状态：待支付）
+    ↓
+调用 Flylink 创建订单 API → 获取 flylinkOrderId + flylinkPaymentUrl
+    ↓
+用户跳转 Flylink 支付页面完成支付
+    ↓
+Flylink 支付成功 → Webhook 回调 HiGoBuy
+    ↓
+HiGoBuy 更新 Order 状态为"已支付"
+    ↓
+后续履约（买手采购、集运、配送）由 Flylink 完成
+    ↓
+HiGoBuy 通过 API 查询订单状态，在对话中展示给用户
+```
+
+**优势**：
+- 用户体验：下单后立即能在本平台看到订单（即使未支付）
+- 本平台掌握订单生命周期，支持待支付、超时取消等
+- 符合主流电商模式，开发量小
+
+#### 3.13.4 数据同步策略
+
+| 数据 | 来源 | 同步方式 | 说明 |
+|------|------|----------|------|
+| 商品信息 | Flylink | API 拉取 + 本地缓存 | 用于快速展示，定期刷新 |
+| 订单创建 | HiGoBuy → Flylink | API 调用 | 用户下单时创建 Flylink 订单 |
+| 支付状态 | Flylink → HiGoBuy | Webhook 回调 | 支付完成后更新本地 Order 状态 |
+| 物流状态 | Flylink → HiGoBuy | 定时轮询 / Webhook | 用于订单追踪展示 |
+
+#### 3.13.5 MVP 职责划分
+
+| 功能 | HiGoBuy | Flylink |
+|------|---------|---------|
+| 用户注册/登录 | ✅ | - |
+| 对话交互 | ✅ | - |
+| 商品推荐 | ✅ | - |
+| 心愿单 | ✅ | - |
+| 商品转化 | 调用 API | ✅ 实现 |
+| 订单创建 | 调用 API | ✅ 实现 |
+| 支付处理 | 跳转 | ✅ 实现 |
+| 买手调度 | - | ✅ 实现 |
+| 集运履约 | - | ✅ 实现 |
+| 订单展示 | ✅ 查询展示 | 数据源 |
+
+---
+
 ## 4. 非功能需求
 
 ### 4.1 性能
@@ -553,9 +651,9 @@ AI 需识别以下用户意图并触发对应流程：
 ```
 用户粘贴商品链接
     ↓
-Flylink 解析（5步）
+调用 Flylink 商品转化 API → 返回商品信息 + flylinkProductId + flylinkUrl
     ↓
-展示商品卡片（含本地化价格 + 集运费）
+HiGoBuy 存储为 Product（缓存），展示商品卡片（含本地化价格 + 集运费）
     ↓
 用户选择商品规格（颜色/尺寸等）→ 价格/重量实时更新
     ↓
@@ -563,24 +661,32 @@ Flylink 解析（5步）
     ↓
 选择/确认本次下单使用的家庭地址（多地址时弹出选择，默认 isDefault）
     ↓
-系统推荐集运批次（基于所选地址区域 + 实时订单聚类）
-    ↓
-用户选择一个批次（每个批次有对应的提货地址和代收人）
-    ↓
 选择是否"愿意代他人收货"（仅更新意愿，不影响本次订单）
     ↓
-展示支付卡片（费用明细 + 批次信息 + 支付方式）
+HiGoBuy 创建轻量 Order（状态：待支付）
     ↓
-用户确认支付
+调用 Flylink 创建订单 API → 获取 flylinkOrderId + flylinkPaymentUrl
     ↓
-支付成功 → 生成订单 → 订单归入所选批次
+展示支付卡片（费用明细 + 批次信息 + "前往支付"按钮）
     ↓
-买手采购 → 国内集货 → 国际发运 → 到达目的国 → 清关
+用户点击"前往支付" → 跳转 Flylink 支付页面
     ↓
-整批包裹送达提货地址（代收人家中）
+用户在 Flylink 完成支付
     ↓
-代收人确认收货 → 通知同批次用户 → 用户凭取件码自提
+Flylink Webhook 回调 → HiGoBuy 更新 Order 状态为"已支付"
+    ↓
+Flylink 履约：买手采购 → 国内集货 → 国际发运 → 到达目的国
+    ↓
+HiGoBuy 同步订单状态 → 在对话中推送物流更新
+    ↓
+整批包裹送达提货地址 → 用户凭取件码自提
 ```
+
+**关键集成点**：
+- 商品转化：调用 Flylink API 获取商品信息和 flylinkUrl
+- 订单创建：调用 Flylink API 创建订单，获取 flylinkOrderId
+- 支付处理：跳转 Flylink 支付页面，不重复建设支付系统
+- 状态同步：通过 Flylink Webhook 接收支付和物流状态更新
 
 ### 5.2 心愿单购买流程
 
@@ -617,17 +723,19 @@ Flylink 解析（5步）
 
 ## 6. 数据模型（核心实体）
 
-> **设计原则**：商品本身只存储来源平台的原始信息（含源币种原价），本地化定价（币种、价格、运费）通过独立的 **ProductPricing** 按区域管理。同一商品可面向不同国家/地区展示不同币种和价格。订单中保存下单时的定价快照，确保历史数据不受后续调价影响。
+> **设计原则**：MVP 阶段采用"Flylink 为电商后端，HiGoBuy 为对话式前端"的架构。核心实体（Product、Order）是 Flylink 数据的本地缓存/投影，用于快速展示和用户交互。订单的支付、履约、状态流转由 Flylink 管理，HiGoBuy 通过 API/Webhook 同步状态。商品定价（ProductPricing）由 HiGoBuy 管理，实现多区域多币种展示。
 
 ### 6.1 商品 (Product)
 
-商品是来源平台商品的唯一映射，只记录原始信息，不绑定任何目的国定价。
+商品是来源平台商品的本地缓存/投影，数据来源于 Flylink 商品转化服务。只记录原始信息和 Flylink 映射，不绑定任何目的国定价。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| id | string | 平台内商品 ID |
+| id | string | 平台内商品 ID（HiGoBuy 内部标识） |
+| flylinkProductId | string | **Flylink 商品 ID（唯一映射）** |
+| flylinkUrl | string | **Flylink 商品链接（用于支付跳转）** |
 | sourcePlatform | enum | 淘宝/天猫/京东/拼多多 |
-| sourceUrl | string | 原始商品链接 |
+| sourceUrl | string | 原始商品链接（淘宝/京东 URL） |
 | name | string | 商品名称（原文） |
 | sourcePrice | decimal | 来源平台原价 |
 | sourceCurrency | string | 源币种，如 CNY |
@@ -785,33 +893,33 @@ R_now  = 7.05（当前市场汇率）
 
 ### 6.3 订单 (Order)
 
-订单保存下单时的**定价快照**，确保即使后续调价或汇率变动，历史订单金额不变。同时记录用户家庭地址（快照）和所属集运批次的关联。
+订单是 Flylink 订单的轻量引用/投影，用于 HiGoBuy 的订单展示和用户交互。核心订单逻辑（支付、履约、状态流转）由 Flylink 管理，HiGoBuy 通过 API 同步状态。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| orderNo | string | 订单号（HG + 日期 + 序号） |
+| orderNo | string | 订单号（HG + 日期 + 序号，HiGoBuy 内部标识） |
 | userId | string | 用户 ID |
-| productId | string | 商品 ID |
-| selectedSkuId | string | **用户选择的规格 SKU ID（null = 无规格商品）** |
-| pricingId | string | **下单时使用的 ProductPricing ID（快照）** |
-| region | string | **目的国/地区（快照）** |
-| currency | string | **订单币种（快照），如 USD** |
-| currencySymbol | string | **币种符号（快照），如 $** |
-| status | enum | 待支付/已下单/集货中/运输中/待提货/已提货 |
+| flylinkOrderId | string | **Flylink 订单 ID（唯一关联，支付后回写）** |
+| flylinkPaymentUrl | string | **Flylink 支付链接（创建订单时获取）** |
+| productId | string | 商品 ID（关联 Product） |
+| selectedSkuId | string | 用户选择的规格 SKU ID（null = 无规格商品） |
+| status | enum | **待支付/已支付/集货中/运输中/待提货/已提货**（从 Flylink 同步） |
 | productPrice | decimal | 商品货款（本地币种，快照） |
 | shippingFee | decimal | 集运费（本地币种，快照） |
 | totalAmount | decimal | 合计金额（本地币种，快照） |
-| sourcePrice | decimal | 源币种原价（用于买手采购参考） |
-| sourceCurrency | string | 源币种（如 CNY） |
-| exchangeRate | decimal | 下单时汇率（快照） |
-| paymentMethod | enum | 信用卡/PayPal/Zelle/ApplePay |
-| homeAddress | Address | **用户家庭地址（结构化快照），见 6.15** |
-| deliveryBatchId | string | **所属集运批次 ID，关联 DeliveryBatch** |
-| willingToReceiveForOthers | boolean | **下单时用户是否选择"愿意代他人收货"** |
-| pickupCode | string | **取件码（批次到达提货地址后生成，用户凭此取件）** |
-| timeline | json | 物流时间线节点 |
+| currency | string | 订单币种（如 USD） |
+| homeAddress | Address | 用户选择的收货地址（结构化快照），见 6.15 |
+| deliveryBatchId | string | 所属集运批次 ID（从 Flylink 同步） |
+| willingToReceiveForOthers | boolean | 下单时用户是否选择"愿意代他人收货" |
+| pickupCode | string | 取件码（批次到达后从 Flylink 同步） |
 | createdAt | datetime | 创建时间 |
-| updatedAt | datetime | 更新时间 |
+| updatedAt | datetime | 最后更新时间 |
+
+**字段说明**：
+- `flylinkOrderId`：用户完成支付后，通过 Flylink Webhook 回写
+- `status`：通过 Flylink Webhook 或定时轮询同步
+- `deliveryBatchId`、`pickupCode`：订单进入集运阶段后从 Flylink 同步
+- 定价快照（`productPrice`、`shippingFee`、`totalAmount`）在创建订单时从 ProductPricing 计算并保存
 
 ### 6.4 集运批次 (DeliveryBatch)
 
