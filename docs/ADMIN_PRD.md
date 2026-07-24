@@ -164,7 +164,7 @@ User 表新增字段：
 | 今日 GMV | `SUM(total_amount) WHERE status IN ('已支付','集货中','运输中','待提货','已提货')` | 实时 |
 | 待支付订单 | `COUNT(orders) WHERE status = '待支付'` | 实时 |
 | 支付失败订单 | `COUNT(orders) WHERE status = '支付失败'` | 实时 |
-| 活跃批次数 | `COUNT(delivery_batches) WHERE status = '集货中'` | 每小时 |
+| 活跃批次数 | 调用集采系统 API 获取 `status = '集货中'` 的批次数 | 每小时 |
 | 注册用户总数 | `COUNT(users) WHERE role = 'user'` | 每小时 |
 | 待结算佣金 | `SUM(commission_amount) WHERE status = '待结算'` | 每日 |
 
@@ -282,11 +282,13 @@ User 表新增字段：
 
 ### 3.3 批次查看（P0）
 
-> 批次的创建、推进、订单分配由**外部集采系统**管理。管理后台仅提供只读查看能力，数据来源于集采系统的回调同步。
+> 批次由**外部集采系统**全权管理，本系统**不存储批次数据**。管理后台展示批次信息时，通过调用集采系统的查询 API 实时获取。
 
 #### 3.3.1 批次列表
 
-**筛选**：状态（集货中/已发运/已到达/已完成）、区域、日期范围
+管理后台调用集采系统 `GET /api/batches` 接口获取批次列表，本地不缓存。
+
+**筛选**：状态（集货中/已发运/已到达/已完成）、区域、日期范围（筛选参数透传给集采系统 API）
 
 **列表字段**：
 
@@ -296,26 +298,28 @@ User 表新增字段：
 | 区域 | 如 Rowland Heights |
 | 状态 | 带颜色标签 |
 | 订单数 | 当前批次订单数 |
-| 总货值 | 批次内订单总金额 |
+| 总货值 | 批次内订单总金额（由本系统根据 orderIds 计算） |
 | 代收人 | 姓名 + 联系方式 |
 | 截止时间 | orderDeadline |
 | 预计发货 | shipDate |
-| 数据来源 | 集采系统同步 / 手动创建 |
 
 #### 3.3.2 批次详情
+
+管理后台调用集采系统 `GET /api/batches/:batchNo` 接口获取批次详情。
 
 | 区域 | 内容 |
 |------|------|
 | 批次信息 | 批次号、区域、状态、时间线（截止/发货/到达） |
-| 代收人信息 | 姓名、联系方式、地址、历史代收次数、评分 |
-| 订单列表 | 该批次内所有订单（可点击跳转到订单详情） |
-| 统计信息 | 订单数、总货值、平均客单价、来源平台占比 |
-| 履约记录 | 集采系统回调的状态变更历史（时间线展示） |
+| 代收人信息 | 姓名、联系方式、地址 |
+| 订单列表 | 该批次内所有订单号（可点击跳转到本系统订单详情） |
+| 统计信息 | 订单数、总货值、平均客单价、来源平台占比（由本系统根据 orderIds 计算） |
+| 履约记录 | 本系统 CallbackLog 中该批次相关的回调记录（时间线展示） |
 
 **操作限制**：
 - 所有字段只读，无编辑/推进/移入移出按钮
-- 如需调整批次，需登录集采系统操作，或通过集采系统提供的 API 触发
-- 批次状态变更由集采系统回调自动更新，管理后台实时展示最新状态
+- 如需调整批次，需登录集采系统操作
+- 批次数据实时来自集采系统 API，管理后台不做本地缓存（避免数据不一致）
+- 若集采系统不可用，批次页面显示"集采系统连接异常"提示
 
 ---
 
@@ -513,8 +517,8 @@ POST /api/callback/fulfillment/batch-created
 ```
 
 **处理逻辑**：
-1. 创建/更新 DeliveryBatch 记录
-2. 将 orderIds 中的订单关联到该批次（更新 `deliveryBatchId`）
+1. 为 orderIds 中每个订单创建/更新 `OrderFulfillment` 记录，写入 `batchNo`
+2. 记录 CallbackLog
 3. 记录审计日志
 
 ##### 回调 2：批次状态变更
@@ -537,13 +541,14 @@ POST /api/callback/fulfillment/batch-status-changed
 ```
 
 **处理逻辑**：
-1. 更新 DeliveryBatch 状态
-2. 级联更新 affectedOrderIds 中订单的状态：
-   - 批次→已发运：订单 集货中→运输中
-   - 批次→已到达：订单 运输中→待提货
-   - 批次→已完成：批次关闭
-3. 批次→已到达时，为每个订单生成取件码
+1. 更新 affectedOrderIds 对应的 `OrderFulfillment` 记录的 `fulfillmentStatus`
+2. 根据批次新状态，通过 service 层触发 Order 状态流转：
+   - 批次→已发运：Order 集货中→运输中
+   - 批次→已到达：Order 运输中→待提货
+   - 批次→已完成：标记 OrderFulfillment 完成
+3. 批次→已到达时，为每个订单生成取件码（更新 Order 表）
 4. 向受影响用户推送通知
+5. 记录 CallbackLog
 
 ##### 回调 3：订单履约状态更新（含凭据）
 
@@ -610,9 +615,11 @@ POST /api/callback/fulfillment/order-fulfillment
 
 **处理逻辑**：
 1. 验证签名和幂等性
-2. 将凭据存入 `order_fulfillment_evidence` 表
-3. 更新订单状态（如果集采系统推送了新状态）
-4. 通知用户（对话内推送状态更新 + 凭据预览）
+2. 创建/更新该订单的 `OrderFulfillment` 记录，更新 `fulfillmentStatus`
+3. 将凭据存入 `OrderFulfillmentEvidence` + `EvidenceAttachment` 表
+4. 如需触发 Order 状态流转（如"已到达"→ 生成取件码），通过 service 层更新 Order 状态
+5. 通知用户（对话内推送状态更新 + 凭据预览）
+6. 记录 CallbackLog
 
 ##### 回调 4：采购结果通知
 
@@ -992,23 +999,33 @@ POST /api/callback/fulfillment/purchase-result
 | sizeBytes | int | 文件大小（字节） |
 | uploadedAt | datetime | 上传时间 |
 
-#### 4.1.6 订单推送记录 (OrderPushLog)
+#### 4.1.6 订单集采集成 (OrderFulfillment)
 
-跟踪每个订单推送到集采系统的状态。
+与 Order 表 1:1 关联，集中存储所有集采系统集成的状态和数据。**不修改 Order 表结构**，避免影响买家端。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | id | string | 记录 ID |
-| orderId | string | 关联订单 ID（唯一） |
-| pushStatus | enum | `pending` / `success` / `failed` / `ignored` |
+| orderId | string | 关联订单 ID（**唯一索引**，1:1） |
+| pushStatus | enum | 推送状态：`pending` / `success` / `failed` / `ignored` |
+| fulfillmentStatus | enum | 履约状态：`pending` / `purchased` / `domestic_warehouse` / `shipping` / `customs` / `arrived` / `picked_up` / `exception` |
+| batchNo | string | 所属批次号（集采系统回调写入，可为空） |
 | pushedAt | datetime | 推送成功时间 |
-| retryCount | int | 重试次数 |
-| lastError | string | 最后一次错误信息 |
-| responseCode | int | 集采系统返回的 HTTP 状态码 |
-| responseBody | json | 集采系统返回的响应体 |
-| pushedBy | string | 推送人（system / adminId） |
+| retryCount | int | 推送重试次数 |
+| lastPushError | string | 最后一次推送错误信息 |
+| pushResponseCode | int | 集采系统接收响应码 |
+| pushResponseBody | json | 集采系统接收响应体 |
+| pushedBy | string | 推送人（`system` / adminId） |
+| lastCallbackAt | datetime | 最后一次回调时间 |
+| externalData | json | 集采系统回传的扩展数据（灵活存储，避免频繁加列） |
 | createdAt | datetime | 创建时间 |
 | updatedAt | datetime | 最后更新时间 |
+
+**设计说明**：
+- `orderId` 唯一索引，确保与 Order 表严格 1:1
+- 推送相关字段（pushStatus、pushedAt、retryCount 等）替代原 OrderPushLog 的职责
+- `externalData` JSON 字段存储集采系统回传的非结构化扩展数据（如采购结果详情、买手信息等），避免为每个字段建列
+- 买家端查询 Order 表时无感知，不受集采集成影响
 
 #### 4.1.7 回调日志 (CallbackLog)
 
@@ -1040,8 +1057,8 @@ POST /api/callback/fulfillment/purchase-result
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | adminNotes | string | 运营备注（简短备注，复杂备注用 OrderNote 表） |
-| pushStatus | enum | 集采推送状态：`not_pushed` / `pushed` / `push_failed` / `ignored`（冗余字段，便于列表筛选） |
-| fulfillmentStatus | string | 集采履约状态：`pending` / `purchased` / `domestic_warehouse` / `shipping` / `customs` / `arrived` / `picked_up` / `exception`（由集采系统回调更新） |
+
+> **注意**：集采集成相关字段（pushStatus、fulfillmentStatus、batchNo 等）全部存储在独立的 `OrderFulfillment` 表（§4.1.6），**不修改 Order 表核心结构**，确保买家端零影响。
 
 ---
 
@@ -1081,17 +1098,18 @@ POST /api/callback/fulfillment/purchase-result
 | POST | `/api/admin/orders/:id/cancel` | 手动取消+退款 | operator+ |
 | POST | `/api/admin/orders/:id/reset-pickup-code` | 重置取件码 | operator+ |
 | POST | `/api/admin/orders/:id/notes` | 添加备注 | operator+ |
-| POST | `/api/admin/orders/:id/reassign-batch` | 调整批次 | operator+ |
+| POST | `/api/admin/orders/:id/reassign-batch` | 调整批次（调用集采系统 API） | operator+ |
 | POST | `/api/admin/orders/batch-transition` | 批量推进状态 | operator+ |
-| POST | `/api/admin/orders/batch-assign` | 批量分配批次 | operator+ |
 | GET | `/api/admin/orders/export` | 导出 CSV | operator+ |
 
-#### 批次查看（只读）
+#### 批次查看（只读，代理集采系统 API）
+
+> 本系统不存储批次数据，以下接口透传调用集采系统的查询 API。
 
 | 方法 | 路径 | 说明 | 权限 |
 |------|------|------|------|
-| GET | `/api/admin/batches` | 批次列表 | operator+ |
-| GET | `/api/admin/batches/:id` | 批次详情（含履约记录） | operator+ |
+| GET | `/api/admin/batches` | 批次列表（代理集采系统 `GET /api/batches`） | operator+ |
+| GET | `/api/admin/batches/:batchNo` | 批次详情（代理集采系统 `GET /api/batches/:batchNo`） | operator+ |
 
 #### 用户管理
 
@@ -1117,8 +1135,11 @@ POST /api/callback/fulfillment/purchase-result
 
 #### 集采对接（凭据与履约）
 
+> 以下接口查询/操作 `OrderFulfillment` 表（§4.1.6），不直接修改 Order 表。
+
 | 方法 | 路径 | 说明 | 权限 |
 |------|------|------|------|
+| GET | `/api/admin/fulfillment/status/:orderId` | 查看订单的集采集成状态（OrderFulfillment） | operator+ |
 | GET | `/api/admin/fulfillment/evidence/:orderId` | 查看订单的所有履约凭据 | operator+ |
 | GET | `/api/admin/fulfillment/callback-logs` | 回调日志列表（排查问题） | operator+ |
 | GET | `/api/admin/fulfillment/callback-logs/:id` | 回调日志详情 | operator+ |
@@ -1133,6 +1154,24 @@ POST /api/callback/fulfillment/purchase-result
 | POST | `/api/callback/fulfillment/batch-status-changed` | 批次状态变更通知 | HMAC 签名 |
 | POST | `/api/callback/fulfillment/order-fulfillment` | 订单履约状态更新（含凭据） | HMAC 签名 |
 | POST | `/api/callback/fulfillment/purchase-result` | 采购结果通知 | HMAC 签名 |
+
+#### 集采系统查询 API（本系统主动调用）
+
+> 以下接口由本系统调用集采系统获取数据，用于管理后台批次查看页面。非管理员直接调用，而是后端服务代理请求。
+
+| 集采系统接口 | 本系统使用场景 | 说明 |
+|-------------|--------------|------|
+| `GET /api/batches` | 批次列表页 | 透传筛选参数，获取批次列表 |
+| `GET /api/batches/:batchNo` | 批次详情页 | 获取批次完整信息（代收人、时间线、orderIds） |
+| `POST /api/orders/push` | 订单推送 | 接收本系统推送的已支付订单 |
+
+**集成配置**（环境变量）：
+
+| 变量 | 说明 |
+|------|------|
+| `PROCUREMENT_API_BASE_URL` | 集采系统 API 地址 |
+| `PROCUREMENT_API_SECRET` | HMAC 签名密钥（与集采系统共享） |
+| `PROCUREMENT_API_TIMEOUT` | 请求超时时间（默认 5000ms） |
 
 #### 商品管理
 
@@ -1375,11 +1414,11 @@ npx prisma migrate dev --name add_admin_features
 # 2. 新增 AuditLog 表
 # 3. 新增 OrderNote 表
 # 4. 新增 Announcement 表
-# 5. 新增 OrderFulfillmentEvidence 表
-# 6. 新增 EvidenceAttachment 表
-# 7. 新增 OrderPushLog 表
+# 5. 新增 OrderFulfillment 表（与 Order 1:1，集采集成状态独立存储）
+# 6. 新增 OrderFulfillmentEvidence 表
+# 7. 新增 EvidenceAttachment 表
 # 8. 新增 CallbackLog 表
-# 9. Order 表新增 adminNotes, pushStatus, fulfillmentStatus
+# 9. Order 表新增 adminNotes（仅此一个字段，集采字段全部在 OrderFulfillment 表）
 ```
 
 ### 7.5 Docker Compose 扩展
