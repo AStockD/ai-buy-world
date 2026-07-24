@@ -265,14 +265,14 @@ AIBuyWorld                    Flylink
   },
   {
     "name": "create_order",
-    "description": "创建订单。必须先确认地址和批次后再调用",
+    "description": "创建订单。地址自动解析：0个地址→引导用户添加，1个地址→自动使用，多个地址→展示地址选择卡片",
     "parameters": {
       "type": "object",
-      "required": ["productId", "skuId", "addressId", "batchId"],
+      "required": ["productId", "skuId"],
       "properties": {
         "productId": { "type": "string" },
         "skuId": { "type": "string" },
-        "addressId": { "type": "string", "description": "用户选择的家庭地址ID" },
+        "addressId": { "type": "string", "description": "可选，用户明确选择的地址ID。未提供时自动解析" },
         "batchId": { "type": "string", "description": "选择的集运批次ID" },
         "willingToReceiveForOthers": {
           "type": "boolean",
@@ -486,21 +486,39 @@ IDLE ──(检测到链接)──▶ PARSING
                           ▼                          ▼
                      WISHLIST                   ADDRESS_CONFIRM
                                                      │
-                                                确认地址
-                                                     │
-                                                     ▼
-                                               BATCH_SELECT
-                                                     │
-                                                选择批次
-                                                     │
-                                                     ▼
-                                              PAYMENT_INIT
-                                                     │
-                                                确认支付
-                                                     │
-                                                     ▼
-                                               PROCESSING
+                                          ┌──────────┼──────────┐
+                                          │          │          │
+                                     0个地址     1个地址     多个地址
+                                          │          │          │
+                                          ▼          ▼          ▼
+                                   ADDRESS_NEEDED  自动使用  ADDRESS_SELECTION
+                                          │                     │
+                                     引导添加              选择地址卡片
+                                          │                     │
+                                          └──────▶┬◀──────────┘
+                                                  │
+                                             确认地址
+                                                  │
+                                                  ▼
+                                            BATCH_SELECT
+                                                  │
+                                             选择批次
+                                                  │
+                                                  ▼
+                                           PAYMENT_INIT
+                                                  │
+                                             确认支付
+                                                  │
+                                                  ▼
+                                            PROCESSING
 ```
+
+**地址解析逻辑**：
+| 场景 | 状态流转 | 用户交互 |
+|------|----------|----------|
+| 0 个地址 | ADDRESS_CONFIRM → ADDRESS_NEEDED | LLM 引导用户输入地址，保存后自动触发下单 |
+| 1 个地址 | ADDRESS_CONFIRM → 自动使用 | 无需用户操作，直接使用唯一地址 |
+| 多个地址 | ADDRESS_CONFIRM → ADDRESS_SELECTION | 展示 `address_select_card`，用户选择或新增 |
 
 **状态存储结构（Redis）**：
 
@@ -570,6 +588,7 @@ Agent 回复包含文本流 + 结构化卡片数据，前端据此渲染：
 | `recommendation_card` | 好物推荐 | 商品网格、热度标签、来源分类 |
 | `shipping_card` | 运费查询 | 费率表、计算结果、集运说明 |
 | `address_card` | 地址选择/管理 | 地址列表、表单、默认标记 |
+| `address_select_card` | 下单时多地址选择 | 地址列表（单选）、确认按钮、添加新地址入口 |
 | `batch_card` | 批次推荐 | 提货地址、代收人、订单数、推荐理由 |
 | `flylink_processing_card` | Flylink 解析中 | 5 步进度条（来源识别→数据抓取→多语言→AI质检→创建资产） |
 | `willing_card` | 代他人收货选项 | 意愿选择（愿意/不愿意）、折扣说明（8折） |
@@ -2989,6 +3008,7 @@ src/
 │   │   ├── WishlistCard.tsx
 │   │   ├── RecommendationCard.tsx # 2×2 网格，单列可滑动
 │   │   ├── AddressCard.tsx
+│   │   ├── AddressSelectCard.tsx  # 下单时多地址选择卡片
 │   │   ├── BatchCard.tsx
 │   │   ├── ShippingCard.tsx
 │   │   ├── FlylinkProcessingCard.tsx # 5步解析进度条
@@ -3175,10 +3195,22 @@ registerCard('wishlist_card', WishlistCard);
 registerCard('recommendation_card', RecommendationCard);
 registerCard('shipping_card', ShippingCard);
 registerCard('address_card', AddressCard);
+registerCard('address_select_card', AddressSelectCard);
 registerCard('batch_card', BatchCard);
 registerCard('flylink_processing_card', FlylinkProcessingCard);
 registerCard('willing_card', WillingCard);
 registerCard('success_card', SuccessCard);
+```
+
+**卡片动作自包含原则**：所有卡片的 `onAction` 回调必须携带完整 ID 参数（如 `productId`、`addressId`），不依赖 Redis 会话状态。这确保从对话历史中点击卡片按钮时仍可正常工作。
+
+```typescript
+// 正确：携带完整 ID
+onAction?.('buy', { productId: data.productId })
+onAction?.('confirm_address', selectedId)
+
+// 错误：依赖会话状态
+onAction?.('buy')  // 刷新页面后无法获取 productId
 ```
 
 ### 11.7 商品卡片（移动端适配）

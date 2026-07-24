@@ -121,10 +121,10 @@ export function ProductCard({ data, onAction }: { data: any; onAction?: (action:
 
         {/* Actions */}
         <div className="flex gap-2">
-          <button onClick={() => onAction?.('wishlist')} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark">
+          <button onClick={() => onAction?.('wishlist', { productId: data.productId })} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-brand px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-dark">
             ❤️ 加入心愿单
           </button>
-          <button onClick={() => onAction?.('buy')} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-transparent px-3 py-2.5 text-[13px] font-semibold text-txt-2 transition-colors hover:border-brand hover:bg-brand-light hover:text-brand">
+          <button onClick={() => onAction?.('buy', { productId: data.productId })} className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-transparent px-3 py-2.5 text-[13px] font-semibold text-txt-2 transition-colors hover:border-brand hover:bg-brand-light hover:text-brand">
             直接购买
           </button>
         </div>

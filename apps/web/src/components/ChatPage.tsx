@@ -140,14 +140,21 @@ export function ChatPage() {
                         type={card.type}
                         data={card.data}
                         onAction={(action, payload) => {
+                          if (isStreaming) return;
+                          const pid = payload?.productId ? ` [productId:${payload.productId}]` : '';
+                          const addressId = typeof payload === 'string' ? payload : payload?.addressId;
+                          const aid = addressId ? ` [addressId:${addressId}]` : '';
                           const actionMessages: Record<string, string> = {
-                            wishlist: '把这个商品加入心愿单',
-                            buy: '帮我下单',
+                            wishlist: `把这个商品加入心愿单${pid}`,
+                            buy: `帮我下单${pid}`,
                             pay: '确认支付',
-                            select_address: `选择地址 ${payload || ''}`,
+                            select_address: `选择地址${aid}`,
+                            confirm_address: `确认使用地址${aid}`,
+                            add_new_address: '我要添加一个新的收货地址',
                             select_batch: `选择批次 ${payload || ''}`,
                             willing_yes: '我愿意代他人收货',
                             willing_no: '不太方便，还是算了',
+                            remove_wishlist: `从心愿单移除这个商品${pid}`,
                           };
                           const text = actionMessages[action];
                           if (text) sendMessage(text);
