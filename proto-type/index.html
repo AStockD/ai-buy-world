@@ -2641,12 +2641,17 @@ function buyWishlistItem(id) {
   if (!item) return;
   showToast(`正在为您处理 ${item.name} 的购买…`);
   renderUserMsg(`购买心愿单商品：${item.name}`);
-  conversationState = 'idle';
-  renderTyping();
-  setTimeout(() => {
-    renderAIMsg(`好的！正在为您创建 <strong>${item.name}</strong> 的订单，货款 <strong>${item.price}</strong>，集运费预估 <strong>$ 4</strong>。<br><br>请确认收货地址：<strong>Rowland Heights, CA · 1888 Commerce Ave Apt 204</strong>`);
-    document.getElementById('inputField').placeholder = '确认地址后继续…';
-  }, 1000);
+  const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+  pendingProduct = {
+    name: item.name,
+    emoji: item.emoji,
+    price: priceNum,
+    currency: '$',
+    shipping: 4.00,
+    source: '心愿单',
+    originalPrice: item.original
+  };
+  setTimeout(() => startPurchase(), 600);
 }
 
 function removeWishlistItem(id) {
