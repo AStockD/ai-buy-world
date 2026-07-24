@@ -29,20 +29,21 @@ export class AgentEngine {
   ): Promise<string> {
     await intentRegistry.ensureLoaded();
 
-    // 检测新商品链接：如果当前会话已有商品状态，自动创建新会话
+    // 检测新商品链接：如果当前会话已有历史消息，自动创建新会话
     let { conversationId } = ctx;
     const hasProductUrl = /https?:\/\/[^\s]+/.test(userMessage) || userMessage.includes('口令');
 
     if (hasProductUrl) {
-      const currentState = await conversationService.getState(conversationId);
-      const hasProductContext = currentState.context.currentProduct ||
-        ['PRODUCT_VIEWED', 'SKU_SELECTED', 'ADDRESS_CONFIRM', 'ADDRESS_SELECTION', 'BATCH_SELECT', 'PAYMENT_INIT'].includes(currentState.state);
-
-      if (hasProductContext) {
-        const newConv = await conversationService.create(ctx.userId, '新商品解析');
-        conversationId = newConv.id;
-        ctx.conversationId = conversationId;
-        emitSSE('conversation_switch', { conversationId: newConv.id, title: newConv.title });
+      try {
+        const existingMessages = await conversationService.getMessages(conversationId, 5);
+        if (existingMessages.length > 0) {
+          const newConv = await conversationService.create(ctx.userId, '新商品解析');
+          conversationId = newConv.id;
+          ctx.conversationId = conversationId;
+          emitSSE('conversation_switch', { conversationId: newConv.id, title: newConv.title });
+        }
+      } catch (err) {
+        // 查询失败时不阻塞主流程
       }
     }
 

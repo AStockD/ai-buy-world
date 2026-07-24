@@ -135,8 +135,12 @@ export class OrderService {
       updated.pickup_code = code;
     }
 
-    // 通知用户
-    await notificationService.notifyOrderStatusChange(order.user_id, orderId, newStatus);
+    // 通知用户（失败不阻塞）
+    try {
+      await notificationService.notifyOrderStatusChange(order.user_id, orderId, newStatus);
+    } catch (err: any) {
+      console.error(`Notification failed for order ${orderId}:`, err.message);
+    }
 
     // 同步 FlyLink（失败不阻塞）
     if (order.flylink_order_id) {
