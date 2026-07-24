@@ -26,7 +26,7 @@ function formatTime(dateStr: string): string {
 
 export function Sidebar({ onMobileClose }: SidebarProps) {
   const { user, logout } = useAuthStore();
-  const { conversations, currentConversationId, loadConversations, selectConversation, sendMessage, error, isStreaming } = useChatStore();
+  const { conversations, currentConversationId, loadConversations, selectConversation, sendMessage, deleteConversation, error, isStreaming } = useChatStore();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -93,7 +93,7 @@ export function Sidebar({ onMobileClose }: SidebarProps) {
           <div
             key={conv.id}
             onClick={() => !selectingId && handleSelect(conv.id)}
-            className={`flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] transition-colors ${
+            className={`group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] transition-colors ${
               conv.id === currentConversationId
                 ? 'bg-sidebar-active text-[#DDD6FE]'
                 : 'text-sidebar-text hover:bg-sidebar-hover'
@@ -103,7 +103,16 @@ export function Sidebar({ onMobileClose }: SidebarProps) {
               {selectingId === conv.id ? '⏳' : '💬'}
             </span>
             <span className="flex-1 truncate">{conv.title || '新对话'}</span>
-            <span className="text-[10px] text-sidebar-muted">{formatTime(conv.updated_at)}</span>
+            <span className="text-[10px] text-sidebar-muted group-hover:hidden">{formatTime(conv.updated_at)}</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
+              className="hidden shrink-0 rounded p-0.5 text-sidebar-muted transition-colors hover:text-danger group-hover:block"
+              title="删除对话"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         ))}
       </div>
