@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AIBuyWorld — AI购物助手</title>
+  <title>HiGoBuy · 海卖购 — AI购物助手</title>
   <style>
     :root {
       --brand: #7C3AED;
@@ -1693,148 +1693,6 @@
       gap: 5px;
     }
 
-    /* ===== ADDRESS FORM ===== */
-    .addr-form-card {
-      background: var(--surface-1);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      margin-bottom: 8px;
-    }
-    .addr-form-header {
-      padding: 12px 16px 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .addr-form-body { padding: 8px 16px 12px; }
-    .addr-form-group { margin-bottom: 10px; }
-    .addr-form-label {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-      display: block;
-    }
-    .addr-form-input {
-      width: 100%;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      color: var(--text-primary);
-      background: var(--surface-2);
-      outline: none;
-      box-sizing: border-box;
-      transition: border-color 0.15s;
-    }
-    .addr-form-input:focus { border-color: var(--brand); }
-    .addr-form-row { display: flex; gap: 8px; }
-    .addr-form-row .addr-form-group { flex: 1; }
-    .addr-form-btn {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-      margin-top: 4px;
-    }
-    .addr-form-btn-primary {
-      background: var(--brand);
-      color: #fff;
-    }
-    .addr-form-btn-primary:hover { opacity: 0.9; }
-
-    /* ===== ADDRESS BOOK ===== */
-    .addr-book-card {
-      background: var(--surface-1);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      margin-bottom: 8px;
-    }
-    .addr-book-header {
-      padding: 12px 16px 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .addr-book-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 12px 16px;
-      cursor: pointer;
-      border-top: 1px solid var(--border);
-      transition: background 0.15s;
-    }
-    .addr-book-item:hover { background: var(--surface-2); }
-    .addr-book-item.selected { background: #f0f7ff; }
-    .addr-book-radio {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      flex-shrink: 0;
-      margin-top: 2px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-    .addr-book-item.selected .addr-book-radio {
-      border-color: var(--brand);
-      background: var(--brand);
-    }
-    .addr-book-item.selected .addr-book-radio::after {
-      content: '✓';
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .addr-book-content { flex: 1; min-width: 0; }
-    .addr-book-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-primary);
-      margin-bottom: 2px;
-    }
-    .addr-book-detail {
-      font-size: 11px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-    .addr-book-default {
-      display: inline-block;
-      background: var(--brand-light, #ede9fe);
-      color: var(--brand);
-      font-size: 10px;
-      font-weight: 600;
-      padding: 1px 5px;
-      border-radius: 3px;
-      margin-left: 6px;
-    }
-    .addr-book-footer {
-      padding: 8px 16px;
-      font-size: 12px;
-      color: var(--brand);
-      background: var(--surface-2);
-      cursor: pointer;
-      text-align: center;
-      font-weight: 500;
-      transition: background 0.15s;
-    }
-    .addr-book-footer:hover { background: var(--brand-light, #ede9fe); }
-
     /* ===== TYPEWRITER CURSOR ===== */
     .type-cursor {
       display: inline-block;
@@ -1860,8 +1718,8 @@
   <div class="sidebar-logo">
     <div class="logo-icon">🛍️</div>
     <div class="logo-text">
-      <div class="logo-name">AIBuyWorld</div>
-      <div class="logo-sub">AIBuyWorld · AI购物助手</div>
+      <div class="logo-name">HiGoBuy</div>
+      <div class="logo-sub">海卖购 · AI购物助手</div>
     </div>
   </div>
 
@@ -1952,7 +1810,7 @@
       <!-- Welcome Screen -->
       <div class="welcome-screen" id="welcomeScreen">
         <div class="welcome-logo">🛍️</div>
-        <div class="welcome-title">您好，我是 AIBuyWorld 购物助手</div>
+        <div class="welcome-title">您好，我是 HiGo 购物助手</div>
         <div class="welcome-sub">粘贴任意淘宝、京东商品链接，我会帮您一键转化、比价、下单，并安排集运直送到您家门口</div>
 
         <div class="welcome-cards">
@@ -2034,7 +1892,6 @@ let wishlist = [
   { id: 'w2', name: '小米Redmi Note 14 Pro 手机', price: '$ 178.43', emoji: '📱', original: '¥ 1,249' },
   { id: 'w3', name: 'Lululemon Align 瑜伽裤 高腰版', price: '$ 64.14', emoji: '🩳', original: '¥ 448' }
 ];
-let userAddresses = [];
 
 const PRODUCTS = {
   taobao_nike: {
@@ -2154,7 +2011,7 @@ function renderTyping() {
   group.innerHTML = `
     <div class="msg-meta">
       <div class="ai-avatar">🤖</div>
-      <span class="msg-sender-name">AIBuyWorld 助手</span>
+      <span class="msg-sender-name">HiGo 助手</span>
     </div>
     <div class="typing-bubble">
       <div class="typing-dot"></div>
@@ -2180,7 +2037,7 @@ function renderAIMsg(html, withFeedback = true) {
   group.innerHTML = `
     <div class="msg-meta">
       <div class="ai-avatar">🤖</div>
-      <span class="msg-sender-name">AIBuyWorld 助手</span>
+      <span class="msg-sender-name">HiGo 助手</span>
       <span class="msg-time">${getTime()}</span>
     </div>
     <div class="msg-bubble">${html}</div>
@@ -2202,7 +2059,7 @@ function renderAICard(cardHTML) {
   group.innerHTML = `
     <div class="msg-meta">
       <div class="ai-avatar">🤖</div>
-      <span class="msg-sender-name">AIBuyWorld 助手</span>
+      <span class="msg-sender-name">HiGo 助手</span>
       <span class="msg-time">${getTime()}</span>
     </div>
     <div class="msg-card-wrap">${cardHTML}</div>
@@ -2357,7 +2214,7 @@ function renderOrderCard() {
       <!-- Order 1 -->
       <div class="order-card">
         <div class="order-header">
-          <div class="order-id">订单号：<span>AB2607120001</span></div>
+          <div class="order-id">订单号：<span>HG2607120001</span></div>
           <span class="order-status-badge status-collecting">集货中</span>
         </div>
         <div class="order-body">
@@ -2400,7 +2257,7 @@ function renderOrderCard() {
       <!-- Order 2 -->
       <div class="order-card">
         <div class="order-header">
-          <div class="order-id">订单号：<span>AB2606280002</span></div>
+          <div class="order-id">订单号：<span>HG2606280002</span></div>
           <span class="order-status-badge status-transit">运输中</span>
         </div>
         <div class="order-body">
@@ -2598,7 +2455,7 @@ function renderSuccessCard(orderNo) {
       <div class="success-desc">
         买手将于今日内开始采购，商品将在下周一（7月15日）随美国区域集运批次统一发货，预计 7月22–25日送达提货地址
       </div>
-      <div class="success-order-id">订单号：AB2607130003</div>
+      <div class="success-order-id">订单号：HG2607130003</div>
       <button class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:8px" onclick="trackNewOrder()">
         📦 追踪订单
       </button>
@@ -2619,7 +2476,7 @@ function confirmPayment() {
   pendingProduct = null;
   renderTyping();
   setTimeout(() => {
-    renderAICard(renderSuccessCard('AB2607130003'));
+    renderAICard(renderSuccessCard('HG2607130003'));
     renderAIMsg('<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>每周一统一发货，本次将于 <strong>7月15日</strong> 随美国批次发出</p><p>🔔 <strong>通知方式：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>💬 <strong>有问题吗？</strong>直接告诉我就好！</p>', true);
   }, 1200);
 }
@@ -2639,204 +2496,79 @@ function addToWishlist() {
 function shareProduct() {
   showToast('已生成分享链接，可发送给朋友 📤');
   setTimeout(() => {
-    renderAIMsg('🔗 商品分享链接已生成！您可以将链接发送给朋友，他们点击后可直接在 AIBuyWorld 下单。<br><br>如果朋友通过您的链接成功下单，您将获得 <strong>$ 2</strong> 的社区返佣哦～');
+    renderAIMsg('🔗 商品分享链接已生成！您可以将链接发送给朋友，他们点击后可直接在 HiGoBuy 下单。<br><br>如果朋友通过您的链接成功下单，您将获得 <strong>$ 2</strong> 的社区返佣哦～');
   }, 800);
 }
 
-const BATCH_OPTIONS = [
+const ADDRESS_OPTIONS = [
   {
-    id: 'batch1',
-    tag: '运费最优', tagStyle: 'tag-brand',
-    icon: '📦',
-    name: 'Rowland Heights 批次',
-    detail: '提货地址：1888 Commerce Ave Apt 204, Rowland Heights, CA 91748',
+    id: 'addr1',
+    tag: '您的默认地址', tagStyle: 'tag-brand',
+    icon: '🏠',
+    name: '林晓雯',
+    detail: '1888 Commerce Ave Apt 204, Rowland Heights, CA 91748',
     reason: '📦 与本周 18 件订单同批次集运 · 运费最优'
   },
   {
-    id: 'batch2',
-    tag: '货量最大', tagStyle: 'tag-success',
+    id: 'addr2',
+    tag: '本周货量最大', tagStyle: 'tag-success',
     icon: '👨‍👩‍👧',
-    name: 'Hacienda Heights 批次',
-    detail: '提货地址：15200 Amar Rd #108, Hacienda Heights, CA 91745',
+    name: '陈志明（代收人）',
+    detail: '15200 Amar Rd #108, Hacienda Heights, CA 91745',
     reason: '🔥 本批次货量最大 · 47 件 · 单件集运费最低'
   },
   {
-    id: 'batch3',
-    tag: '货值最高', tagStyle: 'tag-warning',
-    icon: '💎',
-    name: 'Walnut 批次',
-    detail: '提货地址：21688 Valley Blvd #8, Walnut, CA 91789',
+    id: 'addr3',
+    tag: '本周货值最高', tagStyle: 'tag-warning',
+    icon: '👤',
+    name: '林美华（代收人）',
+    detail: '21688 Valley Blvd #8, Walnut, CA 91789',
     reason: '💎 本批次货值最高 $ 3,240 · 享优先配送保障'
   }
 ];
 
-let selectedHomeAddress = null;
-
-function renderAddressForm() {
-  return `
-    <div class="addr-form-card">
-      <div class="addr-form-header">📍 添加您的家庭地址</div>
-      <div class="addr-form-body">
-        <div class="addr-form-group">
-          <label class="addr-form-label">收件人姓名</label>
-          <input class="addr-form-input" id="addr-name" placeholder="请输入姓名" />
-        </div>
-        <div class="addr-form-group">
-          <label class="addr-form-label">街道地址</label>
-          <input class="addr-form-input" id="addr-street" placeholder="如 1888 Commerce Ave Apt 204" />
-        </div>
-        <div class="addr-form-row">
-          <div class="addr-form-group">
-            <label class="addr-form-label">城市</label>
-            <input class="addr-form-input" id="addr-city" placeholder="Rowland Heights" />
-          </div>
-          <div class="addr-form-group">
-            <label class="addr-form-label">州</label>
-            <input class="addr-form-input" id="addr-state" placeholder="CA" />
-          </div>
-        </div>
-        <div class="addr-form-group">
-          <label class="addr-form-label">邮编</label>
-          <input class="addr-form-input" id="addr-zip" placeholder="91748" />
-        </div>
-        <button class="addr-form-btn addr-form-btn-primary" onclick="submitAddress()">保存并继续</button>
-      </div>
-    </div>`;
-}
-
-function renderAddressBook() {
-  const items = userAddresses.map((addr, i) => `
-    <div class="addr-book-item${addr.selected ? ' selected' : ''}" id="home-addr-${i}" onclick="selectHomeAddress(${i})">
-      <div class="addr-book-radio"></div>
-      <div class="addr-book-content">
-        <div class="addr-book-name">${addr.name}${addr.isDefault ? '<span class="addr-book-default">默认</span>' : ''}</div>
-        <div class="addr-book-detail">${addr.detail}</div>
-      </div>
-    </div>`).join('');
-  return `
-    <div class="addr-book-card">
-      <div class="addr-book-header">📍 请选择本次收货地址</div>
-      ${items}
-      <div class="addr-book-footer" onclick="showAddAddressForm()">+ 使用新地址</div>
-    </div>`;
-}
-
-function submitAddress() {
-  const name = document.getElementById('addr-name')?.value.trim();
-  const street = document.getElementById('addr-street')?.value.trim();
-  const city = document.getElementById('addr-city')?.value.trim();
-  const state = document.getElementById('addr-state')?.value.trim();
-  const zip = document.getElementById('addr-zip')?.value.trim();
-  if (!name || !street || !city || !state || !zip) {
-    showToast('请填写完整地址信息');
-    return;
-  }
-  const newAddr = {
-    name: name,
-    detail: `${street}, ${city}, ${state} ${zip}`,
-    isDefault: userAddresses.length === 0
-  };
-  userAddresses.push(newAddr);
-  renderUserMsg(`已添加地址：${newAddr.detail}`);
-  selectedHomeAddress = newAddr;
-  conversationState = 'confirm_batch';
-  renderTyping();
-  setTimeout(() => {
-    renderAIMsg('<p>地址已保存！根据您所在区域，为您推荐以下集运批次：</p>');
-    setTimeout(() => renderAICard(renderBatchCard()), 300);
-  }, 800);
-}
-
-function selectHomeAddress(index) {
-  if (conversationState !== 'confirm_home_address') return;
-  document.querySelectorAll('.addr-book-item').forEach(el => el.classList.remove('selected'));
-  const item = document.getElementById(`home-addr-${index}`);
-  if (item) item.classList.add('selected');
-  selectedHomeAddress = userAddresses[index];
-  setTimeout(() => {
-    renderUserMsg(`✓ 选择地址：${selectedHomeAddress.name}\n${selectedHomeAddress.detail}`);
-    conversationState = 'confirm_batch';
-    renderTyping();
-    setTimeout(() => {
-      renderAIMsg('<p>好的！根据您所在区域，为您推荐以下集运批次：</p>');
-      setTimeout(() => renderAICard(renderBatchCard()), 300);
-    }, 800);
-  }, 500);
-}
-
-function showAddAddressForm() {
-  conversationState = 'add_address';
-  renderUserMsg('我想使用新地址');
-  renderTyping();
-  setTimeout(() => {
-    renderAIMsg('<p>请填写新的家庭地址：</p>');
-    setTimeout(() => renderAICard(renderAddressForm()), 300);
-  }, 600);
-}
-
-function renderBatchCard() {
-  const items = BATCH_OPTIONS.map(batch => `
-    <div class="address-rec-item" id="${batch.id}" onclick="selectBatch('${batch.id}')">
-      <div class="address-rec-icon">${batch.icon}</div>
+function renderAddressCard() {
+  const items = ADDRESS_OPTIONS.map(addr => `
+    <div class="address-rec-item" id="${addr.id}" onclick="selectAddress('${addr.id}')">
+      <div class="address-rec-icon">${addr.icon}</div>
       <div class="address-rec-content">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap">
-          <span class="address-rec-name">${batch.name}</span>
-          <span class="tag ${batch.tagStyle}">${batch.tag}</span>
+          <span class="address-rec-name">${addr.name}</span>
+          <span class="tag ${addr.tagStyle}">${addr.tag}</span>
         </div>
-        <div class="address-rec-detail">${batch.detail}</div>
-        <div class="address-rec-reason">${batch.reason}</div>
+        <div class="address-rec-detail">${addr.detail}</div>
+        <div class="address-rec-reason">${addr.reason}</div>
       </div>
       <div class="address-check">✓</div>
     </div>`).join('');
   return `
     <div class="address-rec-card">
       <div class="address-rec-header">
-        🚚 智能推荐集运批次
+        📍 智能推荐收货地址
         <span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:auto">基于本周实时集运数据</span>
       </div>
       ${items}
       <div style="padding:9px 16px;font-size:11px;color:var(--text-muted);background:var(--surface-2);display:flex;align-items:center;gap:5px">
-        🔄 数据每小时更新 · 点击选择集运批次
+        🔄 数据每小时更新 · 点击选择收货地址
       </div>
     </div>`;
 }
 
-function selectBatch(batchId) {
-  const batch = BATCH_OPTIONS.find(b => b.id === batchId);
-  if (!batch || conversationState !== 'confirm_batch') return;
+function selectAddress(addrId) {
+  const addr = ADDRESS_OPTIONS.find(a => a.id === addrId);
+  if (!addr || conversationState !== 'confirm_address') return;
   document.querySelectorAll('.address-rec-item').forEach(el => el.classList.remove('selected'));
-  const item = document.getElementById(batchId);
+  const item = document.getElementById(addrId);
   if (item) item.classList.add('selected');
   setTimeout(() => {
-    renderUserMsg(`✓ 选择批次：${batch.name}`);
+    renderUserMsg(`✓ 选择此地址：${addr.name}\n${addr.detail}`);
     conversationState = 'willing_to_receive';
     renderTyping();
     setTimeout(() => {
-      renderAIMsg('<p>批次已选择！最后一个问题：</p>');
+      renderAIMsg('<p>地址已选择！最后一个问题：</p>');
       setTimeout(() => renderAICard(renderWillingCard()), 300);
     }, 800);
   }, 700);
-}
-
-function startPurchase() {
-  if (!pendingProduct) return;
-  renderTyping();
-  if (userAddresses.length === 0) {
-    conversationState = 'add_address';
-    setTimeout(() => {
-      renderAIMsg(`<p>好的！准备为您下单 <strong>${pendingProduct.name}</strong></p><p>📍 您还没有设置家庭地址，请先添加一个收货地址，我将为您推荐最优集运批次：</p>`);
-      setTimeout(() => renderAICard(renderAddressForm()), 300);
-    }, 800);
-  } else {
-    conversationState = 'confirm_home_address';
-    userAddresses.forEach(a => a.selected = false);
-    const defaultIdx = userAddresses.findIndex(a => a.isDefault);
-    if (defaultIdx >= 0) userAddresses[defaultIdx].selected = true;
-    setTimeout(() => {
-      renderAIMsg(`<p>好的！准备为您下单 <strong>${pendingProduct.name}</strong></p><p>📍 请选择本次收货地址，或添加新地址：</p>`);
-      setTimeout(() => renderAICard(renderAddressBook()), 300);
-    }, 800);
-  }
 }
 
 function renderWillingCard() {
@@ -2848,7 +2580,7 @@ function renderWillingCard() {
         <div class="willing-content">
           <div class="willing-title">✅ 愿意 — 我的地址可能成为社区提货点</div>
           <div class="willing-desc">当我的地址被选为批次提货点时，我可以代收整批包裹，其他用户前来取件。</div>
-          <div class="willing-reward">🎁 奖励：集运费 8 折</div>
+          <div class="willing-reward">🎁 奖励：集运费 8 折 + 50 平台积分/次</div>
         </div>
       </div>
       <div class="willing-option" id="willing-no" onclick="selectWilling('no')">
@@ -2874,7 +2606,7 @@ function selectWilling(choice) {
     renderTyping();
     setTimeout(() => {
       if (choice === 'yes') {
-        renderAIMsg('<p>感谢您的热心！🎉 您的偏好已更新。</p><p>作为回报，您下次集运可享 <strong>8 折运费</strong> 优惠。</p>');
+        renderAIMsg('<p>感谢您的热心！🎉 您的偏好已更新。</p><p>作为回报，您下次集运可享 <strong>8 折运费</strong> + <strong>50 积分</strong>奖励。</p>');
       } else {
         renderAIMsg('<p>好的，已为您设置。包裹将直接配送到您的地址。</p>');
       }
@@ -2883,6 +2615,16 @@ function selectWilling(choice) {
       }, 600);
     }, 800);
   }, 400);
+}
+
+function startPurchase() {
+  if (!pendingProduct) return;
+  conversationState = 'confirm_address';
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg(`<p>好的！准备为您下单 <strong>${pendingProduct.name}</strong></p><p>📍 根据本周实时集运数据，为您推荐以下收货地址，请选择：</p>`);
+    setTimeout(() => renderAICard(renderAddressCard()), 300);
+  }, 800);
 }
 
 function addToWishlist() {
@@ -2899,17 +2641,12 @@ function buyWishlistItem(id) {
   if (!item) return;
   showToast(`正在为您处理 ${item.name} 的购买…`);
   renderUserMsg(`购买心愿单商品：${item.name}`);
-  const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-  pendingProduct = {
-    name: item.name,
-    emoji: item.emoji,
-    price: priceNum,
-    currency: '$',
-    shipping: 4.00,
-    source: '心愿单',
-    originalPrice: item.original
-  };
-  setTimeout(() => startPurchase(), 600);
+  conversationState = 'idle';
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg(`好的！正在为您创建 <strong>${item.name}</strong> 的订单，货款 <strong>${item.price}</strong>，集运费预估 <strong>$ 4</strong>。<br><br>请确认收货地址：<strong>Rowland Heights, CA · 1888 Commerce Ave Apt 204</strong>`);
+    document.getElementById('inputField').placeholder = '确认地址后继续…';
+  }, 1000);
 }
 
 function removeWishlistItem(id) {
@@ -2923,17 +2660,11 @@ function removeWishlistItem(id) {
 
 function buyRecoItem(name, price) {
   renderUserMsg(`我想买这个：${name}`);
-  const priceNum = parseFloat(price.replace(/[^0-9.]/g, ''));
-  pendingProduct = {
-    name: name,
-    emoji: '🛍️',
-    price: priceNum,
-    currency: '$',
-    shipping: 4.00,
-    source: '社区推荐',
-    originalPrice: ''
-  };
-  setTimeout(() => startPurchase(), 600);
+  conversationState = 'idle';
+  renderTyping();
+  setTimeout(() => {
+    renderAIMsg(`很好的选择！<strong>${name}</strong> 在美国社区非常受欢迎。<br><br>请将商品的淘宝/京东链接发给我，我来帮您通过 Flylink 转化并下单。<br><br>如果没有链接，也可以直接说"帮我找这款商品"，我来协助搜索 😊`);
+  }, 900);
 }
 
 function trackNewOrder() {
@@ -2963,6 +2694,19 @@ function sendMessage() {
 
 function processInput(text) {
   const lower = text.toLowerCase();
+
+  // Handle address confirmation
+  if (conversationState === 'confirm_address' && (lower.includes('确认') || lower.includes('好') || lower.includes('ok') || lower.includes('是') || lower.includes('用这个') || lower.includes('这个地址'))) {
+    conversationState = 'payment';
+    renderTyping();
+    setTimeout(() => {
+      renderAIMsg('<p>✅ 地址已确认！为您生成订单…</p>');
+      setTimeout(() => {
+        if (pendingProduct) renderAICard(renderPaymentCard(pendingProduct));
+      }, 400);
+    }, 700);
+    return;
+  }
 
   // Detect product links
   if (lower.includes('taobao.com') || lower.includes('tb.cn') || lower.includes('t.cn') || lower.includes('tmall') || lower.includes('淘宝') || lower.includes('天猫') || lower.includes('¥') || lower.includes('item.taobao') || lower.includes('demo_nike') || lower.includes('demo_bag')) {
@@ -3019,7 +2763,7 @@ function processInput(text) {
   if (lower.includes('运费') || lower.includes('shipping') || lower.includes('怎么算') || lower.includes('集运') || lower.includes('费用') || lower.includes('多少钱') || lower.includes('价格')) {
     renderTyping();
     setTimeout(() => {
-      renderAIMsg('✈️ AIBuyWorld采用区域智能集运，相比传统单件邮寄可节省 30–50% 运费：');
+      renderAIMsg('✈️ 海卖购采用区域智能集运，相比传统单件邮寄可节省 30–50% 运费：');
       setTimeout(() => renderAICard(renderShippingCard()), 400);
     }, 800);
     return;
@@ -3029,7 +2773,7 @@ function processInput(text) {
   if (lower.includes('怎么') || lower.includes('如何') || lower.includes('教') || lower.includes('指南') || lower.includes('流程') || lower.includes('步骤') || lower.includes('购物') || lower.includes('guide') || lower.includes('how')) {
     renderTyping();
     setTimeout(() => {
-      renderAIMsg(`<p>📖 <strong>AIBuyWorld 购物流程超简单，4步搞定：</strong></p>
+      renderAIMsg(`<p>📖 <strong>HiGoBuy 购物流程超简单，4步搞定：</strong></p>
 <p><strong>① 发链接</strong> — 把淘宝/京东/天猫商品链接发给我</p>
 <p><strong>② 确认下单</strong> — 我通过 Flylink 解析商品，显示美元价格（含集运），您确认即可</p>
 <p><strong>③ 支付</strong> — 支持信用卡 / PayPal / Zelle / Apple Pay，货款归买手，运费归平台分开结算</p>
@@ -3043,7 +2787,7 @@ function processInput(text) {
   if (lower.includes('你好') || lower.includes('hello') || lower.match(/^hi\b/) || lower.includes('嗨') || lower.includes('早') || lower.includes('在吗')) {
     renderTyping();
     setTimeout(() => {
-      renderAIMsg(`<p>👋 您好，林晓雯！我是 AIBuyWorld 助手，随时为您服务～</p><p>您可以：<br>🔗 粘贴淘宝/京东链接直接下单<br>📦 查询 2 个进行中的订单<br>❤️ 查看 ${wishlist.length} 件心愿单商品<br>⭐ 看看美国社区好物推荐</p><p>今天想买什么？</p>`);
+      renderAIMsg(`<p>👋 您好，林晓雯！我是 HiGo 助手，随时为您服务～</p><p>您可以：<br>🔗 粘贴淘宝/京东链接直接下单<br>📦 查询 2 个进行中的订单<br>❤️ 查看 ${wishlist.length} 件心愿单商品<br>⭐ 看看美国社区好物推荐</p><p>今天想买什么？</p>`);
     }, 600);
     return;
   }
@@ -3065,7 +2809,7 @@ function handleProductLink(product) {
     group.innerHTML = `
       <div class="msg-meta">
         <div class="ai-avatar">🤖</div>
-        <span class="msg-sender-name">AIBuyWorld 助手</span>
+        <span class="msg-sender-name">HiGo 助手</span>
         <span class="msg-time">${getTime()}</span>
       </div>
       <div class="msg-card-wrap" id="flylinkGroup">${renderFlylinkCard(product)}</div>
@@ -3145,7 +2889,7 @@ function newChat() {
   document.getElementById('messages').innerHTML = `
     <div class="welcome-screen" id="welcomeScreen">
       <div class="welcome-logo">🛍️</div>
-      <div class="welcome-title">您好，我是 AIBuyWorld 购物助手</div>
+      <div class="welcome-title">您好，我是 HiGo 购物助手</div>
       <div class="welcome-sub">粘贴任意淘宝、京东商品链接，我会帮您一键转化、比价、下单，并安排集运直送到您家门口</div>
       <div class="welcome-cards">
         <div class="welcome-card" onclick="quickAction('link')">
@@ -3197,7 +2941,7 @@ const CHAT_HISTORIES = {
       { role: 'user', text: '愿意代他人收货' },
       { role: 'ai', type: 'payment', product: 'taobao_nike' },
       { role: 'user', text: '已用信用卡付款了 ✅' },
-      { role: 'ai', type: 'success', orderNo: 'AB2607120001' },
+      { role: 'ai', type: 'success', orderNo: 'HG2607120001' },
       { role: 'ai', text: '<p>🎊 订单已提交！以下是您需要知道的：</p><p>📅 <strong>集运节点：</strong>本次将于 <strong>7月15日（周一）</strong> 随美国集运批次统一发出</p><p>🔔 <strong>通知：</strong>订单每个状态变化我都会在这里通知您，无需主动查询</p><p>祝您购物愉快！👟✨</p>' },
     ]
   },
@@ -3275,7 +3019,7 @@ async function replayUserTypesInput(text) {
 function appendReplayTyping(container) {
   const group = document.createElement('div');
   group.className = 'msg-group ai';
-  group.innerHTML = '<div class="msg-meta"><div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span></div>'
+  group.innerHTML = '<div class="msg-meta"><div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span></div>'
     + '<div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
   container.appendChild(group);
   scrollToBottom();
@@ -3287,7 +3031,7 @@ function appendReplayAICard(container, cardHTML, timeStr) {
   group.className = 'msg-group ai';
   const meta = document.createElement('div');
   meta.className = 'msg-meta';
-  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
+  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
   const wrap = document.createElement('div');
   wrap.className = 'msg-card-wrap';
   wrap.innerHTML = cardHTML;
@@ -3309,7 +3053,7 @@ async function replayProductFlow(product, container, timeStr) {
   group.className = 'msg-group ai';
   const meta = document.createElement('div');
   meta.className = 'msg-meta';
-  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
+  meta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
   group.appendChild(meta);
 
   const cardWrap = document.createElement('div');
@@ -3397,17 +3141,12 @@ async function replayConversation(chatId) {
         await replayDelay(550);
         tEl.remove();
 
-        // Pre-populate a user address for demo
-        if (userAddresses.length === 0) {
-          userAddresses.push({ name: '林晓雯', detail: '1888 Commerce Ave Apt 204, Rowland Heights, CA 91748', isDefault: true });
-        }
-
         // Intro text with typewriter
         const introG = document.createElement('div');
         introG.className = 'msg-group ai';
         const introMeta = document.createElement('div');
         introMeta.className = 'msg-meta';
-        introMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
+        introMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
         const introBubble = document.createElement('div');
         introBubble.className = 'msg-bubble';
         introG.appendChild(introMeta);
@@ -3417,63 +3156,32 @@ async function replayConversation(chatId) {
 
         const pName = (pendingProduct ? pendingProduct.name : '该商品');
         await typeIntoElement(introBubble, '<p>好的！准备为您下单 <strong>' + pName + '</strong></p>'
-          + '<p>📍 请选择本次收货地址：</p>');
+          + '<p>📍 根据本周实时集运数据，为您推荐以下收货地址，请选择：</p>');
         await replayDelay(350);
 
-        // Address book card
-        conversationState = 'confirm_home_address';
-        appendReplayAICard(msgs, renderAddressBook(), timeStr);
-        await replayDelay(2000);
+        // Address card
+        conversationState = 'confirm_address';
+        appendReplayAICard(msgs, renderAddressCard(), timeStr);
+        await replayDelay(3200);
 
-        // Auto-select first address
-        const a1 = document.getElementById('home-addr-0');
+        // Auto-select addr1
+        const a1 = document.getElementById('addr1');
         if (a1) { a1.classList.add('selected'); a1.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
         await replayDelay(1000);
 
-        // User message
-        const addr = userAddresses[0];
+        // User types in input box
+        const addr = ADDRESS_OPTIONS[0];
+        await replayUserTypesInput('选择：' + addr.name + '\n' + addr.detail);
+        await replayDelay(280);
+
         minuteOffset += 2;
         const ug = document.createElement('div');
         ug.className = 'msg-group user';
         ug.innerHTML = '<div class="msg-meta" style="justify-content:flex-end"><span class="msg-time">' + chatTime()
           + '</span><span class="msg-sender-name">您</span></div>'
-          + '<div class="msg-bubble">✓ 选择地址：' + addr.name
+          + '<div class="msg-bubble">✓ 选择此地址：' + addr.name
           + '<br><span style="font-size:12px;opacity:0.85">' + addr.detail + '</span></div>';
         msgs.appendChild(ug);
-        scrollToBottom();
-        conversationState = 'idle';
-
-        // Show batch recommendation
-        await replayDelay(600);
-        const bG = document.createElement('div');
-        bG.className = 'msg-group ai';
-        const bMeta = document.createElement('div');
-        bMeta.className = 'msg-meta';
-        bMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
-        const bBubble = document.createElement('div');
-        bBubble.className = 'msg-bubble';
-        bG.appendChild(bMeta);
-        bG.appendChild(bBubble);
-        msgs.appendChild(bG);
-        scrollToBottom();
-        await typeIntoElement(bBubble, '<p>好的！根据您所在区域，为您推荐以下集运批次：</p>');
-        await replayDelay(300);
-
-        conversationState = 'confirm_batch';
-        appendReplayAICard(msgs, renderBatchCard(), timeStr);
-        await replayDelay(2000);
-
-        // Auto-select batch1
-        const b1 = document.getElementById('batch1');
-        if (b1) { b1.classList.add('selected'); b1.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
-        await replayDelay(1000);
-
-        const bMsg = document.createElement('div');
-        bMsg.className = 'msg-group user';
-        bMsg.innerHTML = '<div class="msg-meta" style="justify-content:flex-end"><span class="msg-time">' + chatTime()
-          + '</span><span class="msg-sender-name">您</span></div>'
-          + '<div class="msg-bubble">✓ 选择批次：Rowland Heights 批次</div>';
-        msgs.appendChild(bMsg);
         scrollToBottom();
         conversationState = 'idle';
 
@@ -3487,14 +3195,14 @@ async function replayConversation(chatId) {
         wG.className = 'msg-group ai';
         const wMeta = document.createElement('div');
         wMeta.className = 'msg-meta';
-        wMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
+        wMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
         const wBubble = document.createElement('div');
         wBubble.className = 'msg-bubble';
         wG.appendChild(wMeta);
         wG.appendChild(wBubble);
         msgs.appendChild(wG);
         scrollToBottom();
-        await typeIntoElement(wBubble, '<p>批次已选择！最后一个问题：</p>');
+        await typeIntoElement(wBubble, '<p>地址已选择！最后一个问题：</p>');
         await replayDelay(300);
 
         conversationState = 'willing_to_receive';
@@ -3518,7 +3226,7 @@ async function replayConversation(chatId) {
         const tEl = appendReplayTyping(msgs);
         await replayDelay(700);
         tEl.remove();
-        appendReplayAICard(msgs, renderSuccessCard(step.orderNo || 'AB2607130003'), timeStr);
+        appendReplayAICard(msgs, renderSuccessCard(step.orderNo || 'HG2607130003'), timeStr);
 
       } else if (step.text) {
         await replayDelay(500);
@@ -3530,7 +3238,7 @@ async function replayConversation(chatId) {
         g.className = 'msg-group ai';
         const gMeta = document.createElement('div');
         gMeta.className = 'msg-meta';
-        gMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">AIBuyWorld 助手</span><span class="msg-time">' + timeStr + '</span>';
+        gMeta.innerHTML = '<div class="ai-avatar">\u{1F916}</div><span class="msg-sender-name">HiGo 助手</span><span class="msg-time">' + timeStr + '</span>';
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
         const fdbk = document.createElement('div');
