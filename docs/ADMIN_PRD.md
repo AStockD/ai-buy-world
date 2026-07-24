@@ -442,31 +442,69 @@ router.get('/api/admin/orders',
 ```json
 {
   "orderId": "AB2607120001",
-  "userId": "u_xxx",
+  "orderNo": "AB260712-0001",
+  "quantity": 2,
   "product": {
     "productId": "p_xxx",
-    "name": "Nike Air Force 1",
+    "name": "Nike Air Force 1 '07 男子运动鞋",
     "sourcePlatform": "taobao",
-    "sourceUrl": "https://item.taobao.com/...",
+    "sourceUrl": "https://item.taobao.com/item.htm?id=123456789",
     "skuId": "sku_001",
     "specs": {"颜色": "白色", "尺码": "US 8"},
+    "images": [
+      "https://img.alicdn.com/imgextra/xxx_1.jpg",
+      "https://img.alicdn.com/imgextra/xxx_2.jpg"
+    ],
     "sourcePrice": 499.00,
-    "sourceCurrency": "CNY"
+    "sourceCurrency": "CNY",
+    "weightGrams": 800
   },
   "shippingAddress": {
     "recipientName": "张伟",
     "phone": "+1 626-555-0123",
     "countryCode": "US",
-    "formatted": "1888 Commerce Ave, Rowland Heights, CA 91748"
+    "state": "California",
+    "city": "Rowland Heights",
+    "zipCode": "91748",
+    "street": "1888 Commerce Ave",
+    "street2": "Suite 200",
+    "formatted": "1888 Commerce Ave, Suite 200, Rowland Heights, CA 91748, US"
   },
-  "amount": {
-    "productPrice": 71.30,
-    "shippingFee": 4.00,
-    "totalAmount": 75.30,
-    "currency": "USD"
-  },
+  "remarks": "买家备注：请让卖家发顺丰，急用",
   "pushedAt": "2026-07-24T10:30:00Z"
 }
+```
+
+**字段说明**：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|:----:|------|
+| orderId | string | ✅ | 本系统订单 ID（回调匹配键） |
+| orderNo | string | ✅ | 订单号（展示用） |
+| quantity | int | ✅ | 商品数量 |
+| product.productId | string | ✅ | 本系统商品 ID |
+| product.name | string | ✅ | 商品名称 |
+| product.sourcePlatform | string | ✅ | 来源平台（taobao / tmall / jd） |
+| product.sourceUrl | string | ✅ | 商品原始链接（买手采购用） |
+| product.skuId | string | ✅ | SKU ID |
+| product.specs | object | ✅ | SKU 规格（键值对，如颜色/尺码） |
+| product.images | string[] | ✅ | 商品图片 URL 列表（验货参考） |
+| product.sourcePrice | float | ✅ | 源平台原价（买手采购成本） |
+| product.sourceCurrency | string | ✅ | 原价币种（CNY） |
+| product.weightGrams | int | ✅ | 商品预估重量（克），用于物流计算 |
+| shippingAddress.recipientName | string | ✅ | 收货人姓名 |
+| shippingAddress.phone | string | ✅ | 收货人电话 |
+| shippingAddress.countryCode | string | ✅ | 国家代码（US / CA / ...） |
+| shippingAddress.state | string | ✅ | 州/省 |
+| shippingAddress.city | string | ✅ | 城市 |
+| shippingAddress.zipCode | string | ✅ | 邮编 |
+| shippingAddress.street | string | ✅ | 街道地址 |
+| shippingAddress.street2 | string | — | 街道地址续（公寓号等，可选） |
+| shippingAddress.formatted | string | ✅ | 格式化完整地址（展示用） |
+| remarks | string | — | 买家备注（可选，无则不传或传 null） |
+| pushedAt | datetime | ✅ | 推送时间（ISO 8601） |
+
+> **设计原则**：推送数据只传集采系统完成采购所需的信息。买家支付的外币金额、运费、折扣、汇率等属于本系统内部商业数据，不暴露给外部集采系统。
 ```
 
 **推送状态跟踪**：
