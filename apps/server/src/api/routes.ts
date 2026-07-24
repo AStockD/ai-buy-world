@@ -1,6 +1,9 @@
 import { FastifyInstance } from 'fastify';
 import { authRoutes } from './auth.routes.js';
 import { addressRoutes } from './address.routes.js';
+import { productRoutes } from './product.routes.js';
+import { wishlistRoutes } from './wishlist.routes.js';
+import { orderRoutes } from './order.routes.js';
 
 export async function registerRoutes(app: FastifyInstance) {
   // 认证路由（公开）
@@ -9,9 +12,16 @@ export async function registerRoutes(app: FastifyInstance) {
   // 地址管理（需认证）
   await app.register(addressRoutes, { prefix: '/api/addresses' });
 
+  // 商品（公开列表/详情，解析需认证）
+  await app.register(productRoutes, { prefix: '/api/products' });
+
+  // 心愿单（需认证）
+  await app.register(wishlistRoutes, { prefix: '/api/wishlist' });
+
+  // 订单（需认证）
+  await app.register(orderRoutes, { prefix: '/api/orders' });
+
   // 后续迭代逐步注册
-  // app.register(orderRoutes, { prefix: '/api/orders' });
-  // app.register(wishlistRoutes, { prefix: '/api/wishlist' });
   // app.register(chatRoutes, { prefix: '/api/chat' });
   // app.register(webhookRoutes, { prefix: '/api/webhooks' });
 }

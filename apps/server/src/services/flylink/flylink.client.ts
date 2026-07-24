@@ -2,6 +2,10 @@ import { config } from '../../lib/config.js';
 import { redis } from '../../lib/redis.js';
 import crypto from 'crypto';
 
+/**
+ * FlyLink API 客户端封装
+ * 开发环境无 API Key 时返回 mock 数据
+ */
 export class FlylinkClient {
   private baseUrl: string;
   private apiKey: string;
@@ -11,7 +15,11 @@ export class FlylinkClient {
     this.apiKey = config.flylink.apiKey;
   }
 
+  /**
+   * 解析商品链接 → 返回商品数据
+   */
   async parseProduct(url: string): Promise<FlylinkProductData> {
+    // 缓存检查
     const cacheKey = `flylink:parse:${crypto.createHash('md5').update(url).digest('hex')}`;
     const cached = await redis.get(cacheKey);
     if (cached) return JSON.parse(cached);
@@ -19,10 +27,10 @@ export class FlylinkClient {
     let data: FlylinkProductData;
 
     if (!this.apiKey || this.apiKey === 'dev-flylink-key') {
+      // 开发环境 mock
       data = this.mockParse(url);
     } else {
-      // Step 1: Convert
-      const convertRes = await fetch(`${this.baseUrl}/convert`, {
+      const res = await fetch(`${this.baseUrl}/parse`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,114 +39,18 @@ export class FlylinkClient {
         body: JSON.stringify({ url }),
       });
 
-      if (!convertRes.ok) throw new Error(`FLYLINK_CONVERT_ERROR: ${convertRes.status}`);
-      const convertResult = await convertRes.json() as any;
-
-      if (!convertResult.success) {
-        throw new Error(convertResult.error || '商品解析失败');
-      }
-
-      // Step 2: Publish (optional - convert result already has all product data)
-      let imageUrls: string[] = [];
-      let productTitle = '未知商品';
-      try {
-        const rawData = typeof convertResult.raw === 'string'
-          ? JSON.parse(convertResult.raw)
-          : convertResult.raw;
-        imageUrls = rawData?.images || [];
-        productTitle = rawData?.title || rawData?.name || productTitle;
-      } catch (e) {
-        console.warn('Failed to parse raw data:', e);
-      }
-
-      let publishResult: any = null;
-      try {
-        const publishRes = await fetch(`${this.baseUrl}/publish`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`,
-          },
-          body: JSON.stringify({
-            convert_result: convertResult,
-            image_urls: imageUrls,
-          }),
-        });
-
-        if (publishRes.ok) {
-          const contentType = publishRes.headers.get('content-type') || '';
-          if (contentType.includes('text/event-stream')) {
-            const text = await publishRes.text();
-            const dataLines = text.split('\n').filter(l => l.startsWith('data: '));
-            for (const line of dataLines) {
-              try {
-                const parsed = JSON.parse(line.slice(6));
-                if (parsed.success !== undefined) { publishResult = parsed; break; }
-              } catch { /* skip */ }
-            }
-          } else {
-            publishResult = await publishRes.json() as any;
-          }
-        }
-      } catch (e) {
-        console.warn('Publish step failed (non-critical):', e);
-      }
-
-      const pricing = convertResult.pricing || {};
-      const skus = convertResult.skus || convertResult.raw?.sku_infos;
-      const skuEntries = convertResult.raw?.sku_entries || [];
-      const skuProps = convertResult.raw?.sku_props || [];
-
-      let flylinkId = publishResult?.product_id || '';
-      if (!flylinkId && convertResult.flylink_json) {
-        try { flylinkId = JSON.parse(convertResult.flylink_json).flylink_id; } catch { /* skip */ }
-      }
-
-      const rawPriceMoney = convertResult.raw?.price_money;
-      const sourcePrice = pricing.cny
-        || pricing.original_price
-        || (rawPriceMoney ? Number(rawPriceMoney) / 100 : 0);
-
-      data = {
-        flylink_product_id: flylinkId || convertResult.spu?.source_url || url,
-        source_platform: convertResult.spu?.source_platform
-          || (convertResult.source_url?.includes('taobao') ? 'taobao' : 'unknown'),
-        source_url: convertResult.source_url || url,
-        title: productTitle,
-        source_price: sourcePrice,
-        source_currency: 'CNY',
-        image_url: imageUrls[0],
-        sku_variants: (skuProps.length || skuEntries.length) ? {
-          dimensions: skuProps.map((p: any) => p.name),
-          skus: skuEntries.map((entry: any) => {
-            const info = skus?.[String(entry.sku_id)] || {};
-            const specs: Record<string, string> = {};
-            const pathParts = (entry.prop_path || '').split(':');
-            for (let i = 0; i + 1 < pathParts.length; i += 2) {
-              const pid = pathParts[i];
-              const vid = pathParts[i + 1];
-              const prop = skuProps.find((p: any) => String(p.pid) === pid) || skuProps[i / 2];
-              if (prop) {
-                const v = prop.values?.find((vv: any) => String(vv.vid) === vid);
-                specs[prop.name] = v?.name || vid;
-              }
-            }
-            return {
-              sku_id: String(entry.sku_id),
-              specs,
-              price_delta: info.price_money ? Number(info.price_money) / 100 : 0,
-              stock: info.quantity || 0,
-            };
-          }),
-        } : undefined,
-        raw_data: convertResult,
-      };
+      if (!res.ok) throw new Error(`FLYLINK_PARSE_ERROR: ${res.status}`);
+      data = await res.json() as FlylinkProductData;
     }
 
+    // 缓存 1 小时
     await redis.set(cacheKey, JSON.stringify(data), 'EX', 3600);
     return data;
   }
 
+  /**
+   * 创建订单
+   */
   async createOrder(params: { product_id: string; sku_id: string; quantity: number; address: any }): Promise<FlylinkOrderData> {
     if (!this.apiKey || this.apiKey === 'dev-flylink-key') {
       return this.mockCreateOrder(params);
@@ -157,6 +69,9 @@ export class FlylinkClient {
     return await res.json() as FlylinkOrderData;
   }
 
+  /**
+   * 同步订单状态到 FlyLink
+   */
   async syncOrderStatus(flylinkOrderId: string, status: string): Promise<void> {
     if (!this.apiKey || this.apiKey === 'dev-flylink-key') return;
 
