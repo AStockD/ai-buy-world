@@ -22,6 +22,7 @@ const envSchema = z.object({
   FLYLINK_API_KEY: z.string().default(''),
   FLYLINK_WEBHOOK_SECRET: z.string().default(''),
 
+  OPENAI_API_URL: z.string().default('https://api.openai.com/v1'),
   OPENAI_API_KEY: z.string().default(''),
   OPENAI_MODEL: z.string().default('gpt-4o'),
 
@@ -54,7 +55,8 @@ export const config = {
     apiKey: parsed.data.FLYLINK_API_KEY,
     webhookSecret: parsed.data.FLYLINK_WEBHOOK_SECRET,
   },
-  openai: {
+  llm: {
+    apiUrl: parsed.data.OPENAI_API_URL,
     apiKey: parsed.data.OPENAI_API_KEY,
     model: parsed.data.OPENAI_MODEL,
   },

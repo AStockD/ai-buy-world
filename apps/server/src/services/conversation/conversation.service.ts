@@ -5,10 +5,6 @@ export interface ConversationContext {
   currentProduct?: { productId: string; name: string };
   selectedSku?: { skuId: string; specs: Record<string, string> } | null;
   pendingAction?: string;
-  currentOrder?: { orderId: string; orderNo: string };
-  selectedAddress?: { addressId: string; formatted: string };
-  selectedBatch?: { batchId: string; area: string };
-  willingToReceiveForOthers?: boolean;
 }
 
 export interface SessionState {
@@ -80,13 +76,6 @@ export class ConversationService {
 
   async setState(conversationId: string, state: SessionState) {
     await SessionCache.set(conversationId, state as any);
-  }
-
-  async updateTitle(conversationId: string, title: string) {
-    await prisma.conversation.update({
-      where: { id: conversationId },
-      data: { title, updated_at: new Date() },
-    });
   }
 
   async delete(userId: string, conversationId: string) {

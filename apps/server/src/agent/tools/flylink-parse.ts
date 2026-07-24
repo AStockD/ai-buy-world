@@ -52,18 +52,6 @@ toolRegistry.register({
       },
     });
 
-    // 将会话标题更新为商品名称
-    await conversationService.updateTitle(conversationId, product.name);
-    emitSSE('conversation_title_update', { conversationId, title: product.name });
-
-    return {
-      productId: product.id,
-      isNew: result.isNew,
-      name: product.name,
-      platform: product.source_platform,
-      price: `${product.source_currency} ${product.source_price}`,
-      image: product.image_url,
-      skuCount: product.sku_variants?.skus?.length || 0,
-    };
+    return { productId: product.id, isNew: result.isNew };
   },
 });

@@ -1,5 +1,4 @@
 import { toolRegistry, type ToolContext } from '../tool-registry.js';
-import { conversationService } from '../../services/conversation/conversation.service.js';
 import { prisma } from '../../lib/prisma.js';
 
 toolRegistry.register({
@@ -15,7 +14,7 @@ toolRegistry.register({
     },
   },
   handler: async (params: { action: string; address?: any; addressId?: string }, context: ToolContext) => {
-    const { userId, conversationId, emitSSE, sessionState } = context;
+    const { userId, emitSSE } = context;
     emitSSE('tool_call', { tool: 'manage_address', status: 'running' });
 
     let result: any;
@@ -46,16 +45,6 @@ toolRegistry.register({
             postal_code: addr.postal_code,
             formatted,
           },
-        });
-
-        // 设为默认地址
-        await prisma.userAddress.updateMany({
-          where: { user_id: userId, id: { not: result.id } },
-          data: { is_default: false },
-        });
-        await prisma.userAddress.update({
-          where: { id: result.id },
-          data: { is_default: true },
         });
         break;
       }
@@ -88,20 +77,6 @@ toolRegistry.register({
 
     emitSSE('card', { type: 'address_card', data: cardData });
     emitSSE('tool_result', { tool: 'manage_address', result: { action: params.action } });
-
-    // 地址保存后，检查是否有待完成的下单操作
-    const pending = sessionState.context.pendingAction;
-    if (params.action === 'add' && (pending === 'create_order_after_address' || pending === 'create_order_after_address_select')) {
-      await conversationService.setState(conversationId, {
-        state: sessionState.state,
-        context: { ...sessionState.context, pendingAction: undefined },
-      });
-      const orderResult = await toolRegistry.execute('create_order', {}, {
-        ...context,
-        sessionState: await conversationService.getState(conversationId),
-      });
-      return { ...cardData, autoOrder: orderResult };
-    }
 
     return cardData;
   },

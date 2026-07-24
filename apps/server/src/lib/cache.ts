@@ -43,12 +43,12 @@ export const ConversationCache = {
     return `conv:ctx:${conversationId}`;
   },
 
-  async get(conversationId: string): Promise<string[]> {
+  async get(conversationId: string): Promise<Array<{ role: string; content: string }>> {
     const data = await redis.lrange(this.key(conversationId), 0, -1);
     return data.map(d => JSON.parse(d));
   },
 
-  async push(conversationId: string, message: string, maxRounds: number = 50): Promise<void> {
+  async push(conversationId: string, message: { role: string; content: string }, maxRounds: number = 50): Promise<void> {
     const key = this.key(conversationId);
     await redis.rpush(key, JSON.stringify(message));
     const len = await redis.llen(key);
@@ -71,16 +71,14 @@ export const SessionCache = {
     return `conv:state:${conversationId}`;
   },
 
-  async get(conversationId: string): Promise<Record<string, string>> {
-    return redis.hgetall(this.key(conversationId));
+  async get(conversationId: string): Promise<any> {
+    const data = await redis.get(this.key(conversationId));
+    return data ? JSON.parse(data) : null;
   },
 
-  async set(conversationId: string, state: Record<string, string>): Promise<void> {
+  async set(conversationId: string, state: any): Promise<void> {
     const key = this.key(conversationId);
-    if (Object.keys(state).length > 0) {
-      await redis.hmset(key, state);
-    }
-    await redis.expire(key, 1800);
+    await redis.set(key, JSON.stringify(state), 'EX', 1800);
   },
 
   async clear(conversationId: string): Promise<void> {

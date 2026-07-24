@@ -1,6 +1,5 @@
 import { toolRegistry, type ToolContext } from '../tool-registry.js';
 import { wishlistService } from '../../services/wishlist/wishlist.service.js';
-import { prisma } from '../../lib/prisma.js';
 
 toolRegistry.register({
   name: 'manage_wishlist',
@@ -28,23 +27,11 @@ toolRegistry.register({
         const productId = params.productId || sessionState.context.currentProduct?.productId;
         if (!productId) throw new Error('需要指定商品ID');
         result = await wishlistService.add(userId, productId);
-        // 补查商品数据，供卡片展示
-        const withProduct = await prisma.wishlist.findUnique({
-          where: { id: result.id },
-          include: { product: true },
-        });
-        if (withProduct) result = withProduct;
         break;
       }
       case 'remove': {
         if (!params.productId) throw new Error('需要指定心愿单ID');
-        // 移除前先查出商品信息
-        const before = await prisma.wishlist.findFirst({
-          where: { id: params.productId, user_id: userId },
-          include: { product: true },
-        });
         result = await wishlistService.remove(userId, params.productId);
-        if (before) result = before;
         break;
       }
       case 'list':
@@ -61,11 +48,7 @@ toolRegistry.register({
         id: item.id,
         productId: item.product_id,
         status: item.status,
-        product: item.product ? {
-          name: item.product.name,
-          imageUrl: item.product.image_url,
-          price: `${item.product.source_currency} ${item.product.source_price}`,
-        } : null,
+        product: item.product ? { name: item.product.name, imageUrl: item.product.image_url } : null,
       })),
     };
 
