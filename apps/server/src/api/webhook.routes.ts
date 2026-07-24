@@ -116,6 +116,6 @@ async function handlePaymentFailed(data: { order_id: string; reason?: string }) 
 
   if (!order || order.status !== '待支付') return;
 
-  await orderService.updateStatus(order.id, '支付失败');
+  await orderService.transitionStatus(order.id, '支付失败');
   console.log(`Order ${order.order_no} payment failed: ${data.reason || 'unknown'}`);
 }
