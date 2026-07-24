@@ -1,4 +1,4 @@
-# HiGoBuy 海卖购 — AI购物助手 产品需求文档 (PRD)
+# AIBuyWorld — AI购物助手 产品需求文档 (PRD)
 
 > 版本：v1.0  
 > 日期：2026-07-21  
@@ -10,7 +10,7 @@
 
 ### 1.1 产品定位
 
-HiGoBuy（海卖购）是一款面向海外华人（首发美国市场）的 **AI 对话式跨境购物助手**。用户通过聊天界面粘贴中国电商平台（淘宝、天猫、京东、拼多多）商品链接，AI 自动完成商品解析、价格换算、集运报价、下单支付和物流追踪的全链路服务。
+AIBuyWorld是一款面向海外华人（首发美国市场）的 **AI 对话式跨境购物助手**。用户通过聊天界面粘贴中国电商平台（淘宝、天猫、京东、拼多多）商品链接，AI 自动完成商品解析、价格换算、集运报价、下单支付和物流追踪的全链路服务。
 
 ### 1.2 核心价值主张
 
@@ -41,7 +41,7 @@ HiGoBuy（海卖购）是一款面向海外华人（首发美国市场）的 **A
 ## 2. 功能架构
 
 ```
-HiGoBuy
+AIBuyWorld
 ├── 对话式购物主流程
 │   ├── 商品链接解析（Flylink 引擎）
 │   ├── 商品详情展示
@@ -281,7 +281,7 @@ HiGoBuy
 
 | 元素 | 说明 |
 |------|------|
-| 订单号 | 格式 HG + 日期 + 序号（如 HG2607120001） |
+| 订单号 | 格式 AB + 日期 + 序号（如 AB2607120001） |
 | 状态标签 | 待支付 / 集货中 / 运输中 / 待提货 / 已提货 |
 | 物流时间线 | 5 步时间线，含完成/进行中/待处理状态 |
 | 商品信息行 | 商品缩略图 + 名称 + 费用明细 + 支付状态 |
@@ -517,11 +517,11 @@ AI 需识别以下用户意图并触发对应流程：
 
 #### 3.13.1 系统定位
 
-**核心原则**：HiGoBuy 是业务主控平台，Flylink 提供订单存储和支付通道。物流履约、集运调度、订单状态管理均由 HiGoBuy 掌控，Flylink 仅作为订单数据的存储方和支付处理方。
+**核心原则**：AIBuyWorld 是业务主控平台，Flylink 提供订单存储和支付通道。物流履约、集运调度、订单状态管理均由 AIBuyWorld 掌控，Flylink 仅作为订单数据的存储方和支付处理方。
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  HiGoBuy（业务主控平台）                                  │
+│  AIBuyWorld（业务主控平台）                                  │
 │  - 用户交互（对话、推荐、心愿单）                          │
 │  - 商品转化与展示                                         │
 │  - 订单状态管理（主控方，驱动状态流转）                     │
@@ -533,8 +533,8 @@ AI 需识别以下用户意图并触发对应流程：
            ▼                               ▼
 ┌─────────────────────────────────────────────────────────┐
 │  Flylink（订单存储 + 支付通道）                           │
-│  - 订单数据存储（接收 HiGoBuy 的订单创建和状态更新）       │
-│  - 支付处理（接收用户支付，回调通知 HiGoBuy）              │
+│  - 订单数据存储（接收 AIBuyWorld 的订单创建和状态更新）       │
+│  - 支付处理（接收用户支付，回调通知 AIBuyWorld）              │
 │  - 商品转化服务（原始链接 → 商品信息）                     │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -545,7 +545,7 @@ AI 需识别以下用户意图并触发对应流程：
 |----------|------|------|
 | **原始商品链接** | 来源平台（淘宝/京东）的商品 URL | `https://item.taobao.com/item.htm?id=xxx` |
 | **Flylink 商品链接** | Flylink 转化后的商品 URL，用于支付 | `https://flylink.com/product/xxx` |
-| **本平台商品链接** | HiGoBuy 内部商品标识（非 URL，用于展示和引用） | `product_id: "taobao_nike"` |
+| **本平台商品链接** | AIBuyWorld 内部商品标识（非 URL，用于展示和引用） | `product_id: "taobao_nike"` |
 
 **转化流程**：
 ```
@@ -555,7 +555,7 @@ AI 需识别以下用户意图并触发对应流程：
     ↓
 Flylink 返回：商品信息 + flylinkProductId + flylinkUrl
     ↓
-HiGoBuy 存储为 Product（缓存/投影）
+AIBuyWorld 存储为 Product（缓存/投影）
     ↓
 建立映射：Product.flylinkProductId ↔ flylinkUrl
 ```
@@ -565,41 +565,41 @@ HiGoBuy 存储为 Product（缓存/投影）
 ```
 用户点击"立即购买"
     ↓
-HiGoBuy 创建 Order（状态：待支付）
+AIBuyWorld 创建 Order（状态：待支付）
     ↓
 调用 Flylink 创建订单 API → 获取 flylinkOrderId + flylinkPaymentUrl
     ↓
 展示支付卡片 → 用户跳转 Flylink 支付页面
     ↓
-用户完成支付 → Flylink Webhook 通知 HiGoBuy
+用户完成支付 → Flylink Webhook 通知 AIBuyWorld
     ↓
-HiGoBuy 更新 Order 状态为"已支付" → 回调 Flylink 同步状态
+AIBuyWorld 更新 Order 状态为"已支付" → 回调 Flylink 同步状态
     ↓
-HiGoBuy 管理履约：买手采购 → 国内集货 → 国际发运 → 末端配送
+AIBuyWorld 管理履约：买手采购 → 国内集货 → 国际发运 → 末端配送
     ↓
-每个状态节点：HiGoBuy 更新本地 Order → 回调 Flylink 同步
+每个状态节点：AIBuyWorld 更新本地 Order → 回调 Flylink 同步
     ↓
-包裹送达提货地址 → 用户凭取件码自提 → HiGoBuy 更新为"已提货"
+包裹送达提货地址 → 用户凭取件码自提 → AIBuyWorld 更新为"已提货"
 ```
 
 **关键点**：
-- 订单状态由 **HiGoBuy 管理并驱动**，Flylink 仅存储
-- 每个状态变更，HiGoBuy 主动回调 Flylink 更新
-- Flylink Webhook 仅在**支付完成**时通知 HiGoBuy
+- 订单状态由 **AIBuyWorld 管理并驱动**，Flylink 仅存储
+- 每个状态变更，AIBuyWorld 主动回调 Flylink 更新
+- Flylink Webhook 仅在**支付完成**时通知 AIBuyWorld
 
 #### 3.13.4 数据同步策略
 
 | 数据 | 方向 | 方式 | 说明 |
 |------|------|------|------|
-| 商品信息 | Flylink → HiGoBuy | API 拉取 + 本地缓存 | 商品转化时获取，定期刷新 |
-| 订单创建 | HiGoBuy → Flylink | API 调用 | 用户下单时同步到 Flylink |
-| 支付确认 | Flylink → HiGoBuy | Webhook 回调 | 支付完成后通知 HiGoBuy |
-| 订单状态 | HiGoBuy → Flylink | API 回调 | HiGoBuy 驱动状态更新，同步到 Flylink |
-| 物流信息 | HiGoBuy 管理 | 本地存储 | 集运批次、提货地址、取件码等 |
+| 商品信息 | Flylink → AIBuyWorld | API 拉取 + 本地缓存 | 商品转化时获取，定期刷新 |
+| 订单创建 | AIBuyWorld → Flylink | API 调用 | 用户下单时同步到 Flylink |
+| 支付确认 | Flylink → AIBuyWorld | Webhook 回调 | 支付完成后通知 AIBuyWorld |
+| 订单状态 | AIBuyWorld → Flylink | API 回调 | AIBuyWorld 驱动状态更新，同步到 Flylink |
+| 物流信息 | AIBuyWorld 管理 | 本地存储 | 集运批次、提货地址、取件码等 |
 
 #### 3.13.5 MVP 职责划分
 
-| 功能 | HiGoBuy | Flylink |
+| 功能 | AIBuyWorld | Flylink |
 |------|---------|---------|
 | 用户注册/登录 | ✅ | - |
 | 对话交互 | ✅ | - |
@@ -659,7 +659,7 @@ HiGoBuy 管理履约：买手采购 → 国内集货 → 国际发运 → 末端
     ↓
 调用 Flylink 商品转化 API → 返回商品信息 + flylinkProductId + flylinkUrl
     ↓
-HiGoBuy 存储为 Product（缓存），展示商品卡片（含本地化价格 + 集运费）
+AIBuyWorld 存储为 Product（缓存），展示商品卡片（含本地化价格 + 集运费）
     ↓
 用户选择商品规格（颜色/尺寸等）→ 价格/重量实时更新
     ↓
@@ -669,7 +669,7 @@ HiGoBuy 存储为 Product（缓存），展示商品卡片（含本地化价格 
     ↓
 选择是否"愿意代他人收货"（仅更新意愿，不影响本次订单）
     ↓
-HiGoBuy 创建 Order（状态：待支付）
+AIBuyWorld 创建 Order（状态：待支付）
     ↓
 调用 Flylink 创建订单 API → 获取 flylinkOrderId + flylinkPaymentUrl
     ↓
@@ -679,9 +679,9 @@ HiGoBuy 创建 Order（状态：待支付）
     ↓
 用户在 Flylink 完成支付
     ↓
-Flylink Webhook 通知 HiGoBuy → HiGoBuy 更新 Order 状态为"已支付" → 回调 Flylink 同步
+Flylink Webhook 通知 AIBuyWorld → AIBuyWorld 更新 Order 状态为"已支付" → 回调 Flylink 同步
     ↓
-HiGoBuy 分配集运批次 + 调度买手 → 更新为"集货中" → 回调 Flylink 同步
+AIBuyWorld 分配集运批次 + 调度买手 → 更新为"集货中" → 回调 Flylink 同步
     ↓
 买手采购 → 国内集货 → 国际发运 → 更新为"运输中" → 回调 Flylink 同步
     ↓
@@ -691,9 +691,9 @@ HiGoBuy 分配集运批次 + 调度买手 → 更新为"集货中" → 回调 Fl
 ```
 
 **关键设计**：
-- HiGoBuy 是订单状态的**主控方**，驱动整个生命周期
-- Flylink 仅在支付环节主动通知（Webhook），其余状态由 HiGoBuy 回调更新
-- 物流履约（买手调度、集运批次、提货地址、取件码）全部由 HiGoBuy 管理
+- AIBuyWorld 是订单状态的**主控方**，驱动整个生命周期
+- Flylink 仅在支付环节主动通知（Webhook），其余状态由 AIBuyWorld 回调更新
+- 物流履约（买手调度、集运批次、提货地址、取件码）全部由 AIBuyWorld 管理
 
 ### 5.2 心愿单购买流程
 
@@ -730,7 +730,7 @@ HiGoBuy 分配集运批次 + 调度买手 → 更新为"集货中" → 回调 Fl
 
 ## 6. 数据模型（核心实体）
 
-> **设计原则**：HiGoBuy 是业务主控平台，管理商品展示、订单状态、物流履约、集运调度等核心业务。Flylink 提供商品转化服务、订单数据存储和支付通道。Product 是 Flylink 商品数据的本地缓存；Order 由 HiGoBuy 管理并驱动状态流转，同步存储到 Flylink。ProductPricing 由 HiGoBuy 管理，实现多区域多币种展示。
+> **设计原则**：AIBuyWorld 是业务主控平台，管理商品展示、订单状态、物流履约、集运调度等核心业务。Flylink 提供商品转化服务、订单数据存储和支付通道。Product 是 Flylink 商品数据的本地缓存；Order 由 AIBuyWorld 管理并驱动状态流转，同步存储到 Flylink。ProductPricing 由 AIBuyWorld 管理，实现多区域多币种展示。
 
 ### 6.1 商品 (Product)
 
@@ -738,7 +738,7 @@ HiGoBuy 分配集运批次 + 调度买手 → 更新为"集货中" → 回调 Fl
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| id | string | 平台内商品 ID（HiGoBuy 内部标识） |
+| id | string | 平台内商品 ID（AIBuyWorld 内部标识） |
 | flylinkProductId | string | **Flylink 商品 ID（唯一映射）** |
 | flylinkUrl | string | **Flylink 商品链接（用于支付跳转）** |
 | sourcePlatform | enum | 淘宝/天猫/京东/拼多多 |
@@ -900,37 +900,37 @@ R_now  = 7.05（当前市场汇率）
 
 ### 6.3 订单 (Order)
 
-订单是 HiGoBuy 的核心业务实体，由 HiGoBuy 管理并驱动状态流转。订单数据同步存储到 Flylink（用于订单存储），但 HiGoBuy 是数据的**主控方**。支付完成后，HiGoBuy 主动回调 Flylink 更新状态。
+订单是 AIBuyWorld 的核心业务实体，由 AIBuyWorld 管理并驱动状态流转。订单数据同步存储到 Flylink（用于订单存储），但 AIBuyWorld 是数据的**主控方**。支付完成后，AIBuyWorld 主动回调 Flylink 更新状态。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| orderNo | string | 订单号（HG + 日期 + 序号，HiGoBuy 内部标识） |
+| orderNo | string | 订单号（AB + 日期 + 序号，AIBuyWorld 内部标识） |
 | userId | string | 用户 ID |
 | flylinkOrderId | string | **Flylink 订单 ID（创建时获取，用于回调更新）** |
 | flylinkPaymentUrl | string | **Flylink 支付链接（创建订单时获取）** |
 | productId | string | 商品 ID（关联 Product） |
 | selectedSkuId | string | 用户选择的规格 SKU ID（null = 无规格商品） |
-| status | enum | **待支付/已支付/集货中/运输中/待提货/已提货**（HiGoBuy 管理，同步到 Flylink） |
+| status | enum | **待支付/已支付/集货中/运输中/待提货/已提货**（AIBuyWorld 管理，同步到 Flylink） |
 | productPrice | decimal | 商品货款（本地币种，快照） |
 | shippingFee | decimal | 集运费（本地币种，快照） |
 | totalAmount | decimal | 合计金额（本地币种，快照） |
 | currency | string | 订单币种（如 USD） |
 | homeAddress | Address | 用户选择的收货地址（结构化快照），见 6.15 |
-| deliveryBatchId | string | 所属集运批次 ID（HiGoBuy 管理） |
+| deliveryBatchId | string | 所属集运批次 ID（AIBuyWorld 管理） |
 | willingToReceiveForOthers | boolean | 下单时用户是否选择"愿意代他人收货" |
-| pickupCode | string | 取件码（HiGoBuy 生成，批次到达后通知用户） |
+| pickupCode | string | 取件码（AIBuyWorld 生成，批次到达后通知用户） |
 | createdAt | datetime | 创建时间 |
 | updatedAt | datetime | 最后更新时间 |
 
-**状态流转**（HiGoBuy 驱动）：
+**状态流转**（AIBuyWorld 驱动）：
 ```
 待支付 → (Flylink Webhook 支付确认) → 已支付
-    → (HiGoBuy 分配批次/买手接单) → 集货中
+    → (AIBuyWorld 分配批次/买手接单) → 集货中
     → (国内集货完成/国际发运) → 运输中
     → (到达目的国/送达提货地址) → 待提货
     → (用户取件) → 已提货
 ```
-每个状态变更，HiGoBuy 更新本地 Order 后回调 Flylink 同步。
+每个状态变更，AIBuyWorld 更新本地 Order 后回调 Flylink 同步。
 
 ### 6.4 集运批次 (DeliveryBatch)
 
