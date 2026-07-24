@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useChatStore } from '../lib/store-chat';
 import { useAuthStore } from '../lib/store-auth';
 import { getCardComponent } from '../lib/card-registry';
-import { api } from '../lib/api';
 import { Sidebar } from './Sidebar';
 import { Drawer } from './Drawer';
 
@@ -140,30 +139,15 @@ export function ChatPage() {
                       <CardRenderer
                         type={card.type}
                         data={card.data}
-                        onAction={async (action, payload) => {
+                        onAction={(action, payload) => {
                           if (isStreaming) return;
-
-                          // 支付动作直接调用 API
-                          if (action === 'pay' && payload?.orderId) {
-                            try {
-                              const res = await api.payOrder(payload.orderId);
-                              if (res.success) {
-                                sendMessage(`订单 ${payload.orderNo || ''} 已支付成功`);
-                              } else {
-                                sendMessage(`支付失败：${res.error?.message || '请稍后重试'}`);
-                              }
-                            } catch (err: any) {
-                              sendMessage(`支付失败：${err.message || '请稍后重试'}`);
-                            }
-                            return;
-                          }
-
                           const pid = payload?.productId ? ` [productId:${payload.productId}]` : '';
                           const addressId = typeof payload === 'string' ? payload : payload?.addressId;
                           const aid = addressId ? ` [addressId:${addressId}]` : '';
                           const actionMessages: Record<string, string> = {
                             wishlist: `把这个商品加入心愿单${pid}`,
                             buy: `帮我下单${pid}`,
+                            pay: '确认支付',
                             select_address: `选择地址${aid}`,
                             confirm_address: `确认使用地址${aid}`,
                             add_new_address: '我要添加一个新的收货地址',
@@ -233,9 +217,6 @@ export function ChatPage() {
               <Chip icon="📦" label="查看订单" onClick={() => !isStreaming && sendMessage('查看我的订单')} />
               <Chip icon="⭐" label="好物推荐" onClick={() => !isStreaming && sendMessage('有什么推荐')} />
               <Chip icon="✈️" label="计算运费" onClick={() => !isStreaming && sendMessage('运费怎么算')} />
-              <Chip icon="🔗" label="淘宝测试" onClick={() => !isStreaming && sendMessage('https://item.taobao.com/item.htm?id=623675070331')} />
-              <Chip icon="🔗" label="京东测试" onClick={() => !isStreaming && sendMessage('https://item.jd.com/100056338181.html')} />
-              <Chip icon="🔗" label="1688测试" onClick={() => !isStreaming && sendMessage('https://detail.1688.com/offer/1031641480452.html')} />
             </div>
 
             {/* Input Box */}
