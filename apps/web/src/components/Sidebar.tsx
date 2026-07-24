@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAuthStore } from '../lib/store-auth';
 import { useChatStore } from '../lib/store-chat';
 import Link from 'next/link';
@@ -26,7 +26,7 @@ function formatTime(dateStr: string): string {
 
 export function Sidebar({ onMobileClose }: SidebarProps) {
   const { user, logout } = useAuthStore();
-  const { conversations, currentConversationId, loadConversations, selectConversation, sendMessage, deleteConversation, error, isStreaming } = useChatStore();
+  const { conversations, currentConversationId, loadConversations, selectConversation, sendMessage } = useChatStore();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -44,18 +44,11 @@ export function Sidebar({ onMobileClose }: SidebarProps) {
     }
   };
 
-  const [selectingId, setSelectingId] = useState<string | null>(null);
-
   const handleSelect = async (id: string) => {
-    setSelectingId(id);
-    try {
-      await selectConversation(id);
-      onMobileClose?.();
-      if (pathname !== '/') {
-        router.push('/');
-      }
-    } finally {
-      setSelectingId(null);
+    await selectConversation(id);
+    onMobileClose?.();
+    if (pathname !== '/') {
+      router.push('/');
     }
   };
 
@@ -92,36 +85,16 @@ export function Sidebar({ onMobileClose }: SidebarProps) {
         {conversations.map((conv) => (
           <div
             key={conv.id}
-            onClick={() => !selectingId && handleSelect(conv.id)}
-            className={`group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] transition-colors ${
+            onClick={() => handleSelect(conv.id)}
+            className={`flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] transition-colors ${
               conv.id === currentConversationId
                 ? 'bg-sidebar-active text-[#DDD6FE]'
                 : 'text-sidebar-text hover:bg-sidebar-hover'
-            } ${selectingId === conv.id ? 'opacity-60' : ''}`}
+            }`}
           >
-            <span className="w-5 shrink-0 text-center text-[15px]">
-              {selectingId === conv.id ? '⏳' : '💬'}
-            </span>
+            <span className="w-5 shrink-0 text-center text-[15px]">💬</span>
             <span className="flex-1 truncate">{conv.title || '新对话'}</span>
-            <span className="text-[10px] text-sidebar-muted group-hover:hidden">{formatTime(conv.updated_at)}</span>
-            <button
-              onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
-              className="shrink-0 rounded p-0.5 text-sidebar-muted transition-colors hover:text-danger md:hidden"
-              title="删除对话"
-            >
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
-              className="hidden shrink-0 rounded p-0.5 text-sidebar-muted transition-colors hover:text-danger max-md:hidden group-hover:block"
-              title="删除对话"
-            >
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <span className="text-[10px] text-sidebar-muted">{formatTime(conv.updated_at)}</span>
           </div>
         ))}
       </div>
@@ -150,18 +123,14 @@ export function Sidebar({ onMobileClose }: SidebarProps) {
         <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-sidebar-muted">
           快捷功能
         </div>
-        <div onClick={() => { if (isStreaming) return; if (pathname !== '/') { router.push('/'); } setTimeout(() => sendMessage('有什么推荐'), 100); onMobileClose?.(); }} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] text-sidebar-text transition-colors hover:bg-sidebar-hover">
+        <div onClick={() => { if (pathname !== '/') { router.push('/'); } setTimeout(() => sendMessage('有什么推荐'), 100); onMobileClose?.(); }} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] text-sidebar-text transition-colors hover:bg-sidebar-hover">
           <span className="w-5 shrink-0 text-center text-[15px]">⭐</span>
           <span>好物推荐</span>
         </div>
-        <div onClick={() => { if (isStreaming) return; if (pathname !== '/') { router.push('/'); } setTimeout(() => sendMessage('运费怎么算'), 100); onMobileClose?.(); }} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] text-sidebar-text transition-colors hover:bg-sidebar-hover">
+        <div onClick={() => { if (pathname !== '/') { router.push('/'); } setTimeout(() => sendMessage('运费怎么算'), 100); onMobileClose?.(); }} className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] text-sidebar-text transition-colors hover:bg-sidebar-hover">
           <span className="w-5 shrink-0 text-center text-[15px]">✈️</span>
           <span>运费计算</span>
         </div>
-        <Link href="/settings" onClick={onMobileClose} className="flex items-center gap-2 rounded-lg px-2.5 py-[9px] text-[13px] text-sidebar-text transition-colors hover:bg-sidebar-hover">
-          <span className="w-5 shrink-0 text-center text-[15px]">⚙️</span>
-          <span>设置</span>
-        </Link>
       </div>
 
       {/* User Info */}

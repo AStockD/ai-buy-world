@@ -35,8 +35,15 @@ app.setErrorHandler((err, req, reply) => {
 });
 
 async function start() {
+  const allowedOrigins = config.corsOrigin.split(',').map(s => s.trim());
   await app.register(cors, {
-    origin: config.corsOrigin,
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    },
     credentials: true,
   });
 
