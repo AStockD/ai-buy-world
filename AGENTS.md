@@ -121,6 +121,7 @@
 - 环境变量：通过 `.env` 管理，配置模板见 TECH_DESIGN §9.1
 - 测试：每个 Service 独立单元测试，关键路径（支付/下单）需集成测试
 - 部署：Docker Compose，CI/CD 走 GitHub Actions（§10.6）
+- **异步 onClick 必须有错误处理**：React 中 async 事件处理函数的未捕获 rejection 会被静默吞掉，用户看不到任何反馈。Zustand Store 的 async 方法必须 try/catch + 设置 error 状态
 
 ---
 
@@ -135,3 +136,32 @@
 - **禁止** 跳过 Webhook 签名验证
 - **禁止** 前端直接调用 FlyLink API（必须走 BFF）
 - **禁止** 在 SSR 中访问 localStorage / sessionStorage
+- **禁止** async onClick handler 不捕获异常（静默失败 = 用户以为"没反应"）
+
+---
+
+## 8. 测试规范与经验教训
+
+### 8.1 E2E 测试必须覆盖所有用户交互路径
+- **不能只测页面导航**（URL 跳转），必须测**页面内交互**（按钮点击 → 状态变化 → UI 更新）
+- 每个可点击的 UI 元素（WelcomeCard、Chip、Sidebar 列表项）都需要 E2E 覆盖
+- curl 验证 API 可用 ≠ 前端交互可用，必须在真实浏览器中验证完整链路
+
+### 8.2 前端异步错误处理铁律
+- Zustand Store 的 async action（如 `sendMessage`、`selectConversation`）必须：
+  1. 整个函数体包在 try/catch 中（包括前置异步操作如 `createConversation`）
+  2. 维护 `error` 状态字段，catch 中设置错误消息
+  3. 提供 `clearError()` 方法供 UI 清除错误
+- 组件中的 async onClick 必须 catch 并展示错误，否则 React 静默吞掉 rejection
+
+### 8.3 Playwright 定位器最佳实践
+- 用 `getByRole('button', { name: '精确文本' })` 代替 `locator('button').filter({ hasText: '...' })`，避免匹配多个元素
+- 页面有多个同名元素时（如 sidebar + main 区域），用 `main` / `aside` 限定作用域
+- 移动端视口（375px）下 sidebar 可能隐藏，测试交互需用 `setViewportSize({ width: 1280 })` 确保桌面布局
+
+### 8.4 回归测试检查清单
+每次迭代完成后，E2E 回归测试必须验证：
+1. 所有 Sidebar 列表项点击 → 对应数据加载
+2. 所有 WelcomeCard / Chip 快捷按钮 → 消息发送成功
+3. 错误场景 → 错误提示可见且可关闭
+4. 已有功能不受影响（全量 E2E 通过）

@@ -21,11 +21,13 @@ interface ChatState {
   currentConversationId: string | null;
   messages: Message[];
   isStreaming: boolean;
+  error: string | null;
   loadConversations: () => Promise<void>;
   selectConversation: (id: string) => Promise<void>;
   createConversation: (title?: string) => Promise<string>;
   sendMessage: (content: string) => Promise<void>;
   deleteConversation: (id: string) => Promise<void>;
+  clearError: () => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -33,6 +35,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   currentConversationId: null,
   messages: [],
   isStreaming: false,
+  error: null,
+
+  clearError: () => set({ error: null }),
 
   loadConversations: async () => {
     const res = await api.listConversations();
@@ -40,17 +45,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   selectConversation: async (id) => {
-    const res = await api.getConversation(id);
-    set({
-      currentConversationId: id,
-      messages: res.data.messages.map((m: any) => ({
-        id: m.id,
-        role: m.role,
-        content: m.content,
-        cards: m.card_data ? [m.card_data] : undefined,
-        created_at: m.created_at,
-      })),
-    });
+    set({ error: null });
+    try {
+      const res = await api.getConversation(id);
+      set({
+        currentConversationId: id,
+        messages: res.data.messages.map((m: any) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          cards: m.card_data ? [m.card_data] : undefined,
+          created_at: m.created_at,
+        })),
+      });
+    } catch (err: any) {
+      set({ error: `加载对话失败: ${err.message}` });
+    }
   },
 
   createConversation: async (title) => {
@@ -65,22 +75,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   sendMessage: async (content) => {
+    set({ error: null });
     const state = get();
     let conversationId = state.currentConversationId;
-
-    if (!conversationId) {
-      conversationId = await get().createConversation(content.slice(0, 20));
-    }
 
     const userMsg: Message = { role: 'user', content };
     const assistantMsg: Message = { role: 'assistant', content: '', cards: [] };
 
-    set((s) => ({
-      messages: [...s.messages, userMsg, assistantMsg],
-      isStreaming: true,
-    }));
-
     try {
+      if (!conversationId) {
+        conversationId = await get().createConversation(content.slice(0, 20));
+      }
+
+      set((s) => ({
+        messages: [...s.messages, userMsg, assistantMsg],
+        isStreaming: true,
+      }));
+
       await api.streamMessage(conversationId, content, (event, data) => {
         if (event === 'text_delta') {
           set((s) => {
@@ -114,14 +125,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
       });
     } catch (err: any) {
-      set((s) => {
-        const messages = [...s.messages];
-        const lastMsg = messages[messages.length - 1];
-        if (lastMsg && lastMsg.role === 'assistant') {
-          lastMsg.content = `出错了: ${err.message}`;
-        }
-        return { messages, isStreaming: false };
-      });
+      const hasAssistant = get().messages.length > 0 && get().messages[get().messages.length - 1]?.role === 'assistant';
+      if (hasAssistant) {
+        set((s) => {
+          const messages = [...s.messages];
+          const lastMsg = messages[messages.length - 1];
+          if (lastMsg && lastMsg.role === 'assistant' && !lastMsg.content) {
+            messages.pop();
+          }
+          return { messages, isStreaming: false, error: `发送失败: ${err.message}` };
+        });
+      } else {
+        set({ isStreaming: false, error: `发送失败: ${err.message}` });
+      }
     }
   },
 

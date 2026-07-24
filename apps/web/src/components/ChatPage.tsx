@@ -10,7 +10,7 @@ import { Drawer } from './Drawer';
 
 export function ChatPage() {
   const router = useRouter();
-  const { messages, isStreaming, sendMessage } = useChatStore();
+  const { messages, isStreaming, sendMessage, error, clearError } = useChatStore();
   const user = useAuthStore((s) => s.user);
   const [input, setInput] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -103,10 +103,10 @@ export function ChatPage() {
                 </p>
 
                 <div className="mt-8 grid w-full max-w-[560px] grid-cols-2 gap-3">
-                  <WelcomeCard icon="🔗" title="粘贴商品链接" desc="支持淘宝、天猫、京东、拼多多链接一键解析" onClick={() => sendMessage('帮我看看这个链接')} />
-                  <WelcomeCard icon="📦" title="查询我的订单" desc="实时追踪订单状态与集运进度" onClick={() => sendMessage('查看我的订单')} />
-                  <WelcomeCard icon="❤️" title="查看心愿单" desc="已收藏 3 件商品，等待您下单" onClick={() => sendMessage('查看心愿单')} />
-                  <WelcomeCard icon="🌟" title="社区好物推荐" desc="美国华人社区本周热购榜单" onClick={() => sendMessage('有什么推荐')} />
+                  <WelcomeCard icon="🔗" title="粘贴商品链接" desc="支持淘宝、天猫、京东、拼多多链接一键解析" onClick={() => !isStreaming && sendMessage('帮我看看这个链接')} />
+                  <WelcomeCard icon="📦" title="查询我的订单" desc="实时追踪订单状态与集运进度" onClick={() => !isStreaming && sendMessage('查看我的订单')} />
+                  <WelcomeCard icon="❤️" title="查看心愿单" desc="已收藏 3 件商品，等待您下单" onClick={() => !isStreaming && sendMessage('查看心愿单')} />
+                  <WelcomeCard icon="🌟" title="社区好物推荐" desc="美国华人社区本周热购榜单" onClick={() => !isStreaming && sendMessage('有什么推荐')} />
                 </div>
 
                 <div className="mt-6 flex items-center gap-1.5 text-[11px] text-txt-muted">
@@ -194,14 +194,22 @@ export function ChatPage() {
           </div>
         </div>
 
+        {/* Error Banner */}
+        {error && (
+          <div className="flex items-center gap-2 border-b border-danger/20 bg-danger/10 px-5 py-2">
+            <span className="flex-1 text-xs text-danger">{error}</span>
+            <button onClick={clearError} className="text-xs text-danger/70 hover:text-danger">关闭</button>
+          </div>
+        )}
+
         {/* Input Area */}
         <div className="border-t border-border bg-surface px-5 pb-[env(safe-area-inset-bottom)] pt-4">
           <div className="mx-auto max-w-[760px]">
             {/* Quick Chips */}
             <div className="mb-2.5 flex flex-wrap gap-1.5">
-              <Chip icon="📦" label="查看订单" onClick={() => sendMessage('查看我的订单')} />
-              <Chip icon="⭐" label="好物推荐" onClick={() => sendMessage('有什么推荐')} />
-              <Chip icon="✈️" label="计算运费" onClick={() => sendMessage('运费怎么算')} />
+              <Chip icon="📦" label="查看订单" onClick={() => !isStreaming && sendMessage('查看我的订单')} />
+              <Chip icon="⭐" label="好物推荐" onClick={() => !isStreaming && sendMessage('有什么推荐')} />
+              <Chip icon="✈️" label="计算运费" onClick={() => !isStreaming && sendMessage('运费怎么算')} />
             </div>
 
             {/* Input Box */}
