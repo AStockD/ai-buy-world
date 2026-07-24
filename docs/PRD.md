@@ -448,63 +448,111 @@ AI 推荐收货地址（基于实时集运数据）
 
 ## 6. 数据模型（核心实体）
 
+> **设计原则**：商品本身只存储来源平台的原始信息（含源币种原价），本地化定价（币种、价格、运费）通过独立的 **ProductPricing** 按区域管理。同一商品可面向不同国家/地区展示不同币种和价格。订单中保存下单时的定价快照，确保历史数据不受后续调价影响。
+
 ### 6.1 商品 (Product)
+
+商品是来源平台商品的唯一映射，只记录原始信息，不绑定任何目的国定价。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | id | string | 平台内商品 ID |
 | sourcePlatform | enum | 淘宝/天猫/京东/拼多多 |
 | sourceUrl | string | 原始商品链接 |
-| name | string | 商品名称 |
-| originalPrice | decimal | 原价（CNY） |
-| localPrice | decimal | 本地化价格（S$） |
-| currency | string | 目标货币 |
-| weight | string | 重量 |
+| name | string | 商品名称（原文） |
+| sourcePrice | decimal | 来源平台原价 |
+| sourceCurrency | string | 源币种，如 CNY |
+| weight | string | 重量（如 "0.8kg"） |
+| weightKg | decimal | 重量千克数（用于运费计算） |
 | rating | decimal | 评分 |
 | salesCount | int | 销量 |
 | stockStatus | enum | 有货/无货/预售 |
 | imageUrl | string | 主图 URL |
-| multiLangAssets | json | 多语言描述 |
+| multiLangAssets | json | 多语言描述 {zh, en, ms, ...} |
 | verifiedStatus | enum | 待核验/已通过/未通过 |
+| createdAt | datetime | 创建时间 |
+| updatedAt | datetime | 更新时间 |
 
-### 6.2 订单 (Order)
+### 6.2 区域定价 (ProductPricing)
+
+每个商品 × 每个目的国/地区 对应一条定价记录。这是"同一商品多国多币种"的核心。
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | string | 定价记录 ID |
+| productId | string | 关联商品 ID |
+| region | string | 目的国/地区代码，如 SG / MY / AU |
+| currency | string | 本地币种代码，如 SGD / MYR / AUD |
+| currencySymbol | string | 币种符号，如 S$ / RM / A$ |
+| localPrice | decimal | 本地化售价（含平台加价/汇率换算） |
+| shippingRatePerKg | decimal | 该区域每公斤集运单价 |
+| shippingCategory | enum | 普通/大件/精品易碎/不可邮 |
+| estimatedShippingFee | decimal | 预估集运费（基于商品重量计算） |
+| exchangeRate | decimal | 下单时锁定的汇率（CNY → 本地币种） |
+| markupRate | decimal | 平台加价率（覆盖汇率波动、服务成本等） |
+| status | enum | 生效/停用 |
+| effectiveFrom | datetime | 生效时间 |
+| effectiveTo | datetime | 失效时间（null = 长期有效） |
+| createdAt | datetime | 创建时间 |
+
+**唯一约束**：`(productId, region, status=生效)` 同时只有一条生效记录。
+
+**定价公式示例**：
+```
+localPrice = sourcePrice × exchangeRate × (1 + markupRate)
+estimatedShippingFee = weightKg × shippingRatePerKg
+totalAmount = localPrice + estimatedShippingFee
+```
+
+### 6.3 订单 (Order)
+
+订单保存下单时的**定价快照**，确保即使后续调价或汇率变动，历史订单金额不变。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | orderNo | string | 订单号（HG + 日期 + 序号） |
 | userId | string | 用户 ID |
 | productId | string | 商品 ID |
+| pricingId | string | **下单时使用的 ProductPricing ID（快照）** |
+| region | string | **目的国/地区（快照）** |
+| currency | string | **订单币种（快照），如 SGD** |
+| currencySymbol | string | **币种符号（快照），如 S$** |
 | status | enum | 待支付/已下单/集货中/运输中/已送达 |
-| productPrice | decimal | 商品货款 |
-| shippingFee | decimal | 集运费 |
-| totalAmount | decimal | 合计金额 |
+| productPrice | decimal | 商品货款（本地币种，快照） |
+| shippingFee | decimal | 集运费（本地币种，快照） |
+| totalAmount | decimal | 合计金额（本地币种，快照） |
+| sourcePrice | decimal | 源币种原价（用于买手采购参考） |
+| sourceCurrency | string | 源币种（如 CNY） |
+| exchangeRate | decimal | 下单时汇率（快照） |
 | paymentMethod | enum | PayNow/信用卡/PayPal |
 | shippingAddress | json | 收货地址 |
 | shippingBatchId | string | 集运批次号 |
 | timeline | json | 物流时间线节点 |
 | createdAt | datetime | 创建时间 |
+| updatedAt | datetime | 更新时间 |
 
-### 6.3 心愿单 (Wishlist)
+### 6.4 心愿单 (Wishlist)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | id | string | 心愿单条目 ID |
 | userId | string | 用户 ID |
 | productId | string | 商品 ID |
+| region | string | **用户所在区域（决定展示哪种币种的价格）** |
 | addedAt | datetime | 加入时间 |
 | status | enum | 待购/已购/已移除 |
 
-### 6.4 用户 (User)
+### 6.5 用户 (User)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | id | string | 用户 ID |
 | name | string | 用户名 |
-| region | string | 所在国家/地区 |
+| region | string | 所在国家/地区代码（如 SG） |
 | defaultAddress | json | 默认收货地址 |
 | addresses | json[] | 地址簿 |
 
-### 6.5 对话 (Conversation)
+### 6.6 对话 (Conversation)
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -514,6 +562,47 @@ AI 推荐收货地址（基于实时集运数据）
 | messages | json[] | 消息列表 |
 | createdAt | datetime | 创建时间 |
 | updatedAt | datetime | 最后更新时间 |
+
+### 6.7 实体关系图
+
+```
+User 1 ──── * Order
+User 1 ──── * Wishlist
+User 1 ──── * Conversation
+
+Product 1 ──── * ProductPricing  (同一商品，每个目的国一条)
+Product 1 ──── * Order           (同一商品可被多次购买)
+Product 1 ──── * Wishlist
+
+ProductPricing 1 ──── * Order    (定价快照关联)
+```
+
+### 6.8 多币种查询示例
+
+**场景**：Nike Air Force 1 分别面向新加坡和马来西亚用户
+
+```
+Product (id: "taobao_nike")
+├── sourcePrice: 499 CNY
+├── weightKg: 0.8
+│
+├── ProductPricing (region: SG)
+│   ├── currency: SGD, symbol: S$
+│   ├── localPrice: 89.50
+│   ├── exchangeRate: 0.183
+│   ├── markupRate: 0.05
+│   └── estimatedShippingFee: 12.80
+│
+└── ProductPricing (region: MY)
+    ├── currency: MYR, symbol: RM
+    ├── localPrice: 298.00
+    ├── exchangeRate: 0.608
+    ├── markupRate: 0.05
+    └── estimatedShippingFee: 42.00
+```
+
+新加坡用户看到：`S$ 89.50 + 集运 S$ 12.80 = S$ 102.30`
+马来西亚用户看到：`RM 298.00 + 集运 RM 42.00 = RM 340.00`
 
 ---
 
