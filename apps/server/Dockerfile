@@ -1,9 +1,21 @@
-# 构建基础镜像: docker build -f Dockerfile.base -t abw-base .
-# 应用构建: docker build -f apps/server/Dockerfile -t abw-server .
+FROM node:20-slim AS base
 
-# --- 构建阶段 ---
-FROM abw-base AS builder
+# --- deps stage (cached, no OpenSSL needed) ---
+FROM base AS deps
 WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY apps/server/package.json apps/server/
+COPY apps/web/package.json apps/web/
+COPY packages/shared/package.json packages/shared/
+
+RUN npm ci --ignore-scripts
+
+# --- build stage (cached, no OpenSSL needed) ---
+FROM base AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
 
 COPY . .
 
@@ -11,9 +23,11 @@ RUN npx prisma generate --schema=apps/server/prisma/schema.prisma
 RUN npm run build --workspace=packages/shared
 RUN npm run build --workspace=apps/server
 
-# --- 运行阶段 ---
-FROM abw-base AS runner
+# --- runtime stage (OpenSSL only here) ---
+FROM base AS runner
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 
@@ -27,4 +41,4 @@ COPY --from=builder /app/apps/server/prisma ./apps/server/prisma
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "cd apps/server && node ../../node_modules/.bin/prisma migrate deploy && ../../node_modules/.bin/tsx prisma/seed.ts && ../../node_modules/.bin/tsx prisma/ensure-partitions.ts && node dist/index.js"]
+CMD ["sh", "-c", "cd apps/server && node ../../node_modules/.bin/prisma migrate deploy && node dist/index.js"]
