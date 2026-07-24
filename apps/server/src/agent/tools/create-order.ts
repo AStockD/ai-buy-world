@@ -81,7 +81,20 @@ toolRegistry.register({
         where: { user_id: userId },
       });
     }
-    if (!address) throw new Error('请先添加收货地址');
+    if (!address) {
+      // 没有地址时不中断流程，设置状态让 LLM 引导用户添加地址
+      await conversationService.setState(conversationId, {
+        state: 'ADDRESS_NEEDED',
+        context: { ...ctx, pendingAction: 'create_order_after_address' },
+      });
+
+      emitSSE('tool_result', { tool: 'create_order', result: { needsAddress: true } });
+
+      return {
+        needsAddress: true,
+        message: '用户尚未添加收货地址，请先引导用户提供收货地址（姓名、电话、州/省、城市、街道、邮编、国家），收到后再继续下单。',
+      };
+    }
 
     const homeAddress = {
       id: address.id,

@@ -54,7 +54,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           id: m.id,
           role: m.role,
           content: m.content,
-          cards: m.card_data ? [m.card_data] : undefined,
+          cards: m.card_data ? (Array.isArray(m.card_data) ? m.card_data : [m.card_data]) : undefined,
           created_at: m.created_at,
         })),
       });

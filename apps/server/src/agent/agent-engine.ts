@@ -61,11 +61,20 @@ export class AgentEngine {
     // Get tool schema for function calling
     const toolSchema = toolRegistry.getFunctionCallingSchema();
 
+    // 收集卡片数据，持久化后加载历史时可还原
+    const collectedCards: Array<{ type: string; data: any }> = [];
+    const captureEmitSSE: SSEEmitter = (event, data) => {
+      if (event === 'card') {
+        collectedCards.push(data);
+      }
+      emitSSE(event, data);
+    };
+
     // Prepare tool context
     const toolContext: ToolContext = {
       userId: ctx.userId,
       conversationId: ctx.conversationId,
-      emitSSE,
+      emitSSE: captureEmitSSE,
       userRegion: ctx.userRegion,
       sessionState,
     };
@@ -127,11 +136,12 @@ export class AgentEngine {
       fullResponse = response.content || '';
     }
 
-    // Save assistant response
+    // Save assistant response with collected card data
     const assistantMsg = await conversationService.addMessage(
       ctx.conversationId,
       'assistant',
       fullResponse || '处理完成',
+      collectedCards.length > 0 ? collectedCards : undefined,
     );
 
     emitSSE('done', { messageId: assistantMsg.id });
