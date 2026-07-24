@@ -31,19 +31,16 @@ describe('ConversationCache', () => {
   });
 
   it('push 和 get 消息', async () => {
-    await ConversationCache.push('conv1', { role: 'user', content: '你好' });
-    await ConversationCache.push('conv1', { role: 'assistant', content: '你好呀' });
+    await ConversationCache.push('conv1', '你好');
+    await ConversationCache.push('conv1', '你好呀');
 
     const messages = await ConversationCache.get('conv1');
-    expect(messages).toEqual([
-      { role: 'user', content: '你好' },
-      { role: 'assistant', content: '你好呀' },
-    ]);
+    expect(messages).toEqual(['你好', '你好呀']);
   });
 
   it('超过 maxRounds 自动裁剪', async () => {
     for (let i = 0; i < 10; i++) {
-      await ConversationCache.push('conv2', { role: 'user', content: `msg${i}` }, 3);
+      await ConversationCache.push('conv2', `msg${i}`, 3);
     }
 
     const messages = await ConversationCache.get('conv2');
@@ -51,7 +48,7 @@ describe('ConversationCache', () => {
   });
 
   it('clear 清除缓存', async () => {
-    await ConversationCache.push('conv3', { role: 'user', content: 'test' });
+    await ConversationCache.push('conv3', 'test');
     await ConversationCache.clear('conv3');
 
     const messages = await ConversationCache.get('conv3');
@@ -78,6 +75,6 @@ describe('SessionCache', () => {
     await SessionCache.clear('conv2');
 
     const state = await SessionCache.get('conv2');
-    expect(state).toBeNull();
+    expect(state).toEqual({});
   });
 });
