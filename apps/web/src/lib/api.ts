@@ -120,6 +120,10 @@ class ApiClient {
     return this.request<any>(`/orders/${id}`);
   }
 
+  async payOrder(id: string) {
+    return this.request<any>(`/orders/${id}/pay`, { method: 'POST' });
+  }
+
   // Chat
   async listConversations() {
     return this.request<any>('/chat/conversations');
